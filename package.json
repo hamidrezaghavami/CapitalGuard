@@ -1,0 +1,20 @@
+{
+  "name": "capitalguard",
+  "version": "1.0.0",
+  "description": "CapitalGuard is a minimalist fintech engine prioritizing capital preservation through mathematical rigor.",
+  "homepage": "https://github.com/hamidrezaghavami/CapitalGuard#readme",
+  "bugs": {
+    "url": "https://github.com/hamidrezaghavami/CapitalGuard/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamidrezaghavami/CapitalGuard.git"
+  },
+  "license": "MIT",
+  "author": "Hamid Reza Ghavami",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
