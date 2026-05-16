@@ -1,7 +1,7 @@
 # CapitalGuard
 
 <p align="center">
-  <img src="./assets/logo.png" width="170" alt="CapitalGuard Logo"/>
+  <img src="image.png" width="170" alt="CapitalGuard Logo"/>
 </p>
 
 <p align="center">
