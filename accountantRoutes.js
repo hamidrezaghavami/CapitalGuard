@@ -1,9 +1,11 @@
-import express from "express";
-import multer from "multer";
-import path from "path";
-import csvParser from "csv-parser";
-import fs from "fs";
-import { calculateFeeDrain } from "../controllers/accountantController.js";
+import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import csvParser from 'csv-parser';
+import fs from 'fs';
+import { normalizeTrade } from '../utils/dataNormalizer.js';
+import { calculateSurvivalRunway, calculateFeeDrain } from '../controllers/forecasterController.js';
+import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../controllers/riskController.js';
 
 const router = express.Router();
 
@@ -66,14 +68,25 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
         fs.createReadStream(filePath)
         .pipe(csvParser()) 
         .on('data', (data) => { 
-            results.push(data); 
+            // Translate the messy raw row into our strict schema
+            const cleanTrade = normalizeTrade(data);
         })
         .on('end', () => {
-            const chartMetrics = calculateFeeDrain(results);
+            const accountantMetrics = calculateFeeDrain(results);
+
+            const dangerData = calculateDistanceToDanger(results);
+            const phychologyData = calculatePsychologicalDrawdown(results);
+
+            const runwayData = calculateSurvivalRunway(results);
+            const ruinData = calculateFeeDrain(results);
 
             return res.json({
-                message: "CSV file parsed and analyzed successfully!",
-                analytics: chartMetrics,
+                message: "Dashboard data completely analyzed!",
+                analytics: {
+                    accountant: accountantMetrics,
+                    riskOfficer: { distanceToDanger: dangerData, phychology: phychologyData },
+                    forecaster: { runway: runwayData, riskOfRuin: ruinData }
+                },
                 trades: results
             });
 

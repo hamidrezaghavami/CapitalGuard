@@ -1,5 +1,6 @@
-import express from "express";
-import { calculateDistanceToDanger, calculatePsychologicalDrawdown } from "./Controllers/riskController";
+import express from 'express';
+import { calculateDistanceToDanger, calculatePsychologicalDrawdown } from '../Controllers/riskController';
+import { normalizeTrade } from '../utils/dataNormalizer.js';
 
 const router = express.Router();
 
@@ -16,13 +17,13 @@ router.post('/analyze', (req, res) => {
         }
 
         const dangerData = calculateDistanceToDanger(tradesArray);
-        const phychologyData = calculatePsychologicalDrawdown(tradesArray);
+        const psychologyData = calculatePsychologicalDrawdown(tradesArray);
 
         res.status(200).json({
             success: true,
             metrics: {
                 distanceToDanger: dangerData, 
-                phychology: phychologyData
+                psychology: psychologyData
             }
         });
     } catch (error) { 

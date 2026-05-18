@@ -1,5 +1,6 @@
-import express from "express";
-import { calculateSurvivalRunway, calculateRiskOfRuin } from "./Controllers/forecasterController";
+import express from 'express';
+import { calculateSurvivalRunway, calculateRiskOfRuin } from './Controllers/forecasterController';
+import { normalizeTrade } from '../utils/dataNormalizer.js';
 
 const router = express.Router();
 
@@ -16,6 +17,10 @@ router.post('/analyze', (req, res) => {
             })
         }
 
+        // Mapping through the array to clean every trade before doing the math
+        const cleanTrades = tradesArray.map(trade => normalizeTrade(trade));
+
+        // feed clean array into my egine
         const survivalData = calculateSurvivalRunway(tradesArray, startingBalance);
         const ruinData = calculateRiskOfRuin(tradesArray, startingBalance);
 
