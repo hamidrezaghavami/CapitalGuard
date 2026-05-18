@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import csvParser from "csv-parser";
 import fs from "fs";
+import { calculateFeeDrain } from "../controllers/accountantController.js";
 
 const router = express.Router();
 
@@ -48,10 +49,11 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
             const parsedData = JSON.parse(rawData);
 
             // where data loaded
+            const chartMetrics = calculateFeeDrain(parsedData);
             return res.json({
-                message: "JSON file parsed Successfully!.",
-                totalTrades: parsedData.length,
-                trades: parsedData // raw data array 
+                message: "JSON file parsed and analyzed successfully!",
+                analytics: chartMetrics,
+                trades: parsedData
             });
         } catch (err) {
             return res.status(500).json({ error: "Failed to parse JSON file." });
@@ -61,22 +63,24 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
     if (fileType === 'text/csv') { 
         const results = [];
 
-        // open file and pass through the CSV Steam
         fs.createReadStream(filePath)
-        .pipe(csvParser()) // turn texts rows into JS objs
+        .pipe(csvParser()) 
         .on('data', (data) => { 
-            results.push(data); // push row data into array
+            results.push(data); 
         })
-        .on('end', () => { // file fully read and we send response
-            res.json({
-                message: "CSV File parsed successfully!",
-                totalTrades: results.length,
+        .on('end', () => {
+            const chartMetrics = calculateFeeDrain(results);
+
+            return res.json({
+                message: "CSV file parsed and analyzed successfully!",
+                analytics: chartMetrics,
                 trades: results
             });
+
         })
-        .on('error', (err) => { // error handling
-            res.status(500).json({ error: "Failed to parse CSV file!." });
-        })
+        .on('error', (err) => { 
+            return res.status(500).json({ error: "Failed to parse CSV file!." });
+        });
     }
 }); // we did Data Ingestion & Routing
 
