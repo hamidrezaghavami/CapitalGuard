@@ -51,14 +51,26 @@ Projects survival runway using statistical risk-of-ruin modeling.
 ## Project Structure
 
 ```bash
+## 🏗️ Backend Architecture
+
+The CapitalGuard backend follows a modular, Controller-Route architecture to separate the API routing from the heavy mathematical Core Analytics Layer.
+
 /capital-guard-backend
-├── app.js
-├── routers.js
-├── /routes
-├── /controllers
-├── /middleware
-├── /services
-└── /utils
+├── app.js                      # Main entry point, Express setup, and global middleware
+├── /routes                     # API Routing Layer (Express Routers)
+│   ├── authRoutes.js           # Clerk.com authentication endpoints
+│   ├── accountantRoutes.js     # Trade parsing and nominal vs. fee drain endpoints
+│   ├── riskRoutes.js           # Risk Officer endpoints (Stop-Loss Triggers)
+│   └── forecasterRoutes.js     # Forecaster endpoints (Risk-of-Ruin, Runway)
+│
+├── /controllers                # Core Analytics Layer (Math & Logic Engines)
+│   ├── accountantController.js # Engine for parsing CSV logic and fee calculations
+│   ├── riskController.js       # Engine for psychological drawdown & danger distance
+│   └── forecasterController.js # Engine for statistical modeling and probability
+│
+├── /middleware                 # Custom Express middleware (e.g., error handling)
+├── /services                   # External API integrations and database services
+└── /utils                      # Shared helper functions and formatting tools
 ```
 ### Data Pipeline
 
