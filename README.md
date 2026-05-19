@@ -51,34 +51,48 @@ Projects survival runway using statistical risk-of-ruin modeling.
 ## Project Structure
 
 ```bash
-## 🏗️ Backend Architecture
+## 🏗️ Full-Stack Architecture
 
-The CapitalGuard backend follows a modular, Controller-Route architecture to separate the API routing from the heavy mathematical Core Analytics Layer.
+CapitalGuard is built as a decoupled, full-stack application. It uses a local first React frontend for a secure, terminal like user experience, connected to a modular Node.js/Express backend that handles the heavy mathematical Core Analytics.
 
-/capital-guard-backend
-├── app.js                      # Main entry point, Express setup, and global middleware
-├── /routes                     # API Routing Layer (Express Routers)
-│   ├── authRoutes.js           # Clerk.com authentication endpoints
-│   ├── accountantRoutes.js     # Trade parsing and nominal vs. fee drain endpoints
-│   ├── riskRoutes.js           # Risk Officer endpoints (Stop-Loss Triggers)
-│   └── forecasterRoutes.js     # Forecaster endpoints (Risk-of-Ruin, Runway)
+/CapitalGuard
+├── /frontend ( handled by ai )     # React.js User Interface
+│   ├── index.html                  # The main HTML shell
+│   └── /src                        # Core React Application
+│       ├── main.jsx                # Entry point & Clerk Auth Provider wrapper
+│       ├── App.jsx                 # Main layout and routing logic
+│       ├── index.css               # Global UI styling (FinTech terminal theme)
+│       ├── /pages
+│       │   └── Dashboard.jsx       # File upload zone and Grand Orchestrator display
+│       ├── /components
+│       │   ├── AuthGuard.jsx       # Clerk Sign-in/Sign-up visual components
+│       │   └── MetricCard.jsx      # Reusable UI cards for analytics rendering
+│       └── /utils
+│           └── storage.js          # Local-first IndexedDB storage logic
 │
-├── /controllers                # Core Analytics Layer (Math & Logic Engines)
-│   ├── accountantController.js # Engine for parsing CSV logic and fee calculations
-│   ├── riskController.js       # Engine for psychological drawdown & danger distance
-│   └── forecasterController.js # Engine for statistical modeling and probability
-│
-├── /middleware                 # Custom Express middleware (e.g., error handling)
-├── /services                   # External API integrations and database services
-└── /utils                      # Shared helper functions and formatting tools
+└── /backend                        # Node.js / Express Core Engine
+    ├── app.js                      # Main entry point, Express setup, and global middleware
+    ├── /routes                     # API Routing Layer (Express Routers)
+    │   ├── authRoutes.js           # Clerk.com authentication endpoints
+    │   ├── accountantRoutes.js     # Trade parsing and nominal vs. fee drain endpoints
+    │   ├── riskRoutes.js           # Risk Officer endpoints (Stop-Loss Triggers)
+    │   └── forecasterRoutes.js     # Forecaster endpoints (Risk-of-Ruin, Runway)
+    │
+    ├── /Controllers                # Core Analytics Layer (Math & Logic Engines)
+    │   ├── accountantController.js # Engine for parsing CSV logic and fee calculations
+    │   ├── riskController.js       # Engine for psychological drawdown & danger distance
+    │   └── forecasterController.js # Engine for statistical modeling and probability
+    │
+    └── /utils                      # Shared helper functions and formatting tools
+        └── dataNormalizer.js       # Universal exchange CSV/JSON schema translator
 ```
-### Data Pipeline
+### ⚙️ Data Pipeline
 
-#### 1. Upload trading history
-#### 2. Normalize broker data
-#### 3. Execute analytics engines
-#### 4. Aggregate dashboard insights
-#### 5. Render minimalist reports
+1. **Ingestion:** Client securely uploads raw CSV/JSON trading logs via the React interface.
+2. **Normalization:** The Express backend parses and translates messy broker formats into a strict, unified CapitalGuard schema.
+3. **Processing:** Data is routed through the Core Analytics engines (Accountant, Risk Officer, Forecaster).
+4. **Aggregation:** The backend compiles the mathematical insights into a single JSON payload.
+5. **Rendering:** The React Dashboard visualizes the institutional metrics and caches the session locally using IndexedDB.
 
 ### Philosophy
 
@@ -86,10 +100,10 @@ CapitalGuard follows a strict rule:
 
 If a metric does not improve survival or capital preservation, it should not exist.
 
-### Roadmap
+### 🚀 Roadmap
 
-* Broker API integrations
-* AI behavioral analysis
-* Monte Carlo simulations
-* Portfolio stress testing
-* Real-time analytics
+- [ ] Broker API integrations
+- [ ] AI behavioral analysis
+- [ ] Monte Carlo simulations
+- [ ] Portfolio stress testing
+- [ ] Real-time analytics
