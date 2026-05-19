@@ -40,4 +40,4 @@ Thumbs.db
 
 # Documentation Build Artifacts
 CapitalGuard_Technical_Document.pdf
-*.html
+!index.html

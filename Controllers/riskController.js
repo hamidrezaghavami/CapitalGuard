@@ -6,9 +6,6 @@ export const calculateDistanceToDanger = (tradesArray) => {
     
     // clean and extract numbers for specific trade
     const DistanceToDanger = tradesArray.forEach(trade => {
-        
-        let plannedRiskBuy = entryPrice - stopLoss;
-        let plannedRiskShort = entryPrice - exitPrice;
 
         const pnl = parseFloat(trade.pnl || 0 );
         const entryPrice = parseFloat(trade.entryPrice || 0 );

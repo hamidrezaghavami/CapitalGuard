@@ -12,7 +12,6 @@ export const calculateSurvivalRunway = (tradeArray, startingBalance = 2000) => {
     
     let totalLossAmount = 0;
     let losingTradesCount = 0;
-    let startingBalance = 0;
     let runningNetPnL = 0; // track actual real balance
 
     tradeArray.forEach(trade => {
@@ -29,7 +28,7 @@ export const calculateSurvivalRunway = (tradeArray, startingBalance = 2000) => {
     });
 
     // calculate their true balance
-    const latestBalance = startingBalance = runningNetPnL;
+    const latestBalance = startingBalance + runningNetPnL;
 
     // account is already blown up ( first case )
     if ( latestBalance <= 0 ) { 

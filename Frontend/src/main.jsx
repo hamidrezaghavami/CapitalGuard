@@ -1,0 +1,1 @@
+// The entry point. It boots up React and wraps your app in the Clerk authentication provider.

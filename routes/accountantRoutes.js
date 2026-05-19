@@ -6,7 +6,7 @@ import fs from 'fs';
 import { normalizeTrade } from '../utils/dataNormalizer.js';
 import { calculateFeeDrain } from '../Controllers/accountantController.js';
 import { calculateSurvivalRunway, calculateRiskOfRuin } from '../Controllers/forecasterController.js';
-import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../controllers/riskController.js';
+import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../Controllers/riskController.js';
 
 const router = express.Router();
 

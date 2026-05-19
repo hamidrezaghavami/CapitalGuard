@@ -12,7 +12,7 @@
   },
   "license": "MIT",
   "author": "Hamid Reza Ghavami",
-  "type": "commonjs",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -20,6 +20,8 @@
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.23",
     "csv-parser": "^3.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.1.0",
     "multer": "^2.1.1"
   }
 }
