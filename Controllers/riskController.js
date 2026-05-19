@@ -3,11 +3,12 @@ export const calculateDistanceToDanger = (tradesArray) => {
     let totalLosingTrades = 0;
     let rulesBrokenTrades = 0;
 
-    let plannedRiskBuy = entryPrice - stopLoss;
-    let plannedRiskShort = entryPrice - exitPrice;
     
     // clean and extract numbers for specific trade
     const DistanceToDanger = tradesArray.forEach(trade => {
+        
+        let plannedRiskBuy = entryPrice - stopLoss;
+        let plannedRiskShort = entryPrice - exitPrice;
 
         const pnl = parseFloat(trade.pnl || 0 );
         const entryPrice = parseFloat(trade.entryPrice || 0 );
@@ -15,7 +16,7 @@ export const calculateDistanceToDanger = (tradesArray) => {
         const stopLoss = parseFloat(trade.stopLoss || 0 );
         
         // skip winning trades
-        if ( pnL >= 0 ) {
+        if ( pnl >= 0 ) {
             return;
         }
         
@@ -47,7 +48,7 @@ export const calculateDistanceToDanger = (tradesArray) => {
 export const calculatePsychologicalDrawdown = (tradesArray) => {
     
     const tagCounts = { strategic: 0, greed: 0, fear: 0, fomo: 0, revenge: 0 };
-    const taglosses = { strategic: 0, greed: 0, fear: 0, fomo: 0, revenge: 0 };
+    const tagLosses = { strategic: 0, greed: 0, fear: 0, fomo: 0, revenge: 0 };
     let totalCashLoss = 0;
 
     // loop for see every trade for tag
@@ -83,7 +84,7 @@ export const calculatePsychologicalDrawdown = (tradesArray) => {
     });
 
     // trigger warning if emotional loss consume more than 50% of total damage
-    const emotionalLossTrade = tradeCashLoss - tagLosses.strategic;
+    const emotionalLossTrade = totalCashLoss - tagLosses.strategic;
     const haltTradingWarning = totalCashLoss > 0 && ( emotionalLossTrade / totalCashLoss ) > 0.50;
 
     // return everything to show on your dashboards

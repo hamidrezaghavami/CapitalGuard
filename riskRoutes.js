@@ -1,5 +1,5 @@
 import express from 'express';
-import { calculateDistanceToDanger, calculatePsychologicalDrawdown } from '../Controllers/riskController';
+import { calculateDistanceToDanger, calculatePsychologicalDrawdown } from '../Controllers/riskController.js';
 import { normalizeTrade } from '../utils/dataNormalizer.js';
 
 const router = express.Router();
@@ -16,8 +16,9 @@ router.post('/analyze', (req, res) => {
             });
         }
 
-        const dangerData = calculateDistanceToDanger(tradesArray);
-        const psychologyData = calculatePsychologicalDrawdown(tradesArray);
+        const cleanTrades = tradesArray.map(trade => normalizeTrade(trade));
+        const dangerData = calculateDistanceToDanger(cleanTrades);
+        const psychologyData = calculatePsychologicalDrawdown(cleanTrades);
 
         res.status(200).json({
             success: true,

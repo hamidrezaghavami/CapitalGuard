@@ -28,7 +28,6 @@ export const calculateFeeDrain = (tradesArray) => {
             pnl: pnl - fee,
             feePaid: fee,
             psychologyTag: existingTag,
-            tagColor: getTagColor(existingTag)
         }
     });
 

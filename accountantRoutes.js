@@ -4,7 +4,8 @@ import path from 'path';
 import csvParser from 'csv-parser';
 import fs from 'fs';
 import { normalizeTrade } from '../utils/dataNormalizer.js';
-import { calculateSurvivalRunway, calculateFeeDrain } from '../controllers/forecasterController.js';
+import { calculateFeeDrain } from '../Controllers/accountantController.js';
+import { calculateSurvivalRunway, calculateRiskOfRuin } from '../Controllers/forecasterController.js';
 import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../controllers/riskController.js';
 
 const router = express.Router();
@@ -70,6 +71,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
         .on('data', (data) => { 
             // Translate the messy raw row into our strict schema
             const cleanTrade = normalizeTrade(data);
+            results.push(cleanTrade);
         })
         .on('end', () => {
             const accountantMetrics = calculateFeeDrain(results);
@@ -78,7 +80,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
             const phychologyData = calculatePsychologicalDrawdown(results);
 
             const runwayData = calculateSurvivalRunway(results);
-            const ruinData = calculateFeeDrain(results);
+            const ruinData = calculateRiskOfRuin(results);
 
             return res.json({
                 message: "Dashboard data completely analyzed!",
