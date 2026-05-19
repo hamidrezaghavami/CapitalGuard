@@ -3,6 +3,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 import authRoutes from './routes/authRoutes.js';
+
 import accountantRoutes from './routes/accountantRoutes.js';
 import forecasterRoutes from './routes/forecasterRoutes.js';
 import riskRoutes from './routes/riskRoutes.js';
@@ -29,7 +30,7 @@ app.use('/api/accountants', limiter);
 app.use('/api/forecaster', limiter);
 app.use('/api/risk', limiter);
 
-//app.use(ClerkExpressRequireAuth());
+app.use(ClerkExpressRequireAuth());
 
 // Routers
 app.use('/api/auth', authRoutes);

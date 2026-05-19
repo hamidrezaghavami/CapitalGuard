@@ -83,6 +83,7 @@ export const calculatePsychologicalDrawdown = (tradesArray) => {
     // trigger warning if emotional loss consume more than 50% of total damage
     const emotionalLossTrade = totalCashLoss - tagLosses.strategic;
     const haltTradingWarning = totalCashLoss > 0 && ( emotionalLossTrade / totalCashLoss ) > 0.50;
+    const dominantEmotion = "Greed";
 
     // return everything to show on your dashboards
     return { 
