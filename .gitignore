@@ -4,6 +4,7 @@ jspm_packages/
 
 # Financial Data & User Uploads (Crucial for CapitalGuard)
 # Ensures local CSV/JSON trading logs aren't leaked
+uploads/
 *.csv
 *.json
 !package.json
