@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
+import cors from 'cors';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 import authRoutes from './routes/authRoutes.js';
 
@@ -14,6 +15,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // secure HTTP headers sent from your server to the browser
+app.use(cors({
+    origin: 'http://localhost:5173', // Your React URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(helmet());
 app.use(express.json());
 
@@ -30,7 +36,7 @@ app.use('/api/accountants', limiter);
 app.use('/api/forecaster', limiter);
 app.use('/api/risk', limiter);
 
-app.use(ClerkExpressRequireAuth());
+// app.use(ClerkExpressRequireAuth());
 
 // Routers
 app.use('/api/auth', authRoutes);

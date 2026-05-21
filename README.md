@@ -98,7 +98,7 @@ Payload Structure: application/json ({ tradesArray })
 Description: Quantifies metric deviations to score trading compliance and trigger psychological warning payloads.
 
 Direct clone from terminal context:
-git clone [https://github.com/hamidrezaghavami/CapitalGuard.git](https://github.com hamidrezaghavami/CapitalGuard.git)
+git clone [https://github.com/hamidrezaghavami/CapitalGuard.git]
 cd CapitalGuard
 
 Establish package dependencies: npm install
