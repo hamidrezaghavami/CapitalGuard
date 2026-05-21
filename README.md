@@ -12,39 +12,29 @@
 
 ## Overview
 
-CapitalGuard is a FinTech analytics platform focused on one thing:
-
-> Helping traders survive longer.
-
-Instead of showing vanity metrics and fake profitability, CapitalGuard analyzes trading performance through:
-- inflation-adjusted returns,
-- risk exposure,
-- and statistical survival modeling.
-
-The platform transforms raw trading history into institutional-style risk intelligence.
-
----
+CapitalGuard is a premium, data-driven financial backend engine engineered to protect and project trading capital. The platform transforms raw trading history logs into institutional-style risk intelligence by analyzing behavioral discipline, transaction drains, and statistical capital longevity.
 
 ## Core Modules
 
-### The Accountant
-Calculates real purchasing-power performance using inflation-adjusted analytics.
+### The Performance Audit (Accountant Engine)
+Intercepts uploaded broker files to isolate and calculate real returns against hidden transaction commission drains using a standard $2,000 capital baseline.
 
-### The Risk Officer
-Tracks stop-loss discipline, drawdowns, and exposure vulnerabilities.
+### Drawdown Defense (Risk Officer Engine)
+Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score while flagging psychological anomalies (Revenge Trading, FOMO, Greed) straight from data tags.
 
-### The Forecaster
-Projects survival runway using statistical risk-of-ruin modeling.
+### Growth Projections (Forecaster Engine)
+Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, generating statistical probability structures for Capital Runway horizons and Risk of Ruin margins.
 
 ---
 
-## Tech Stack
+## Tech Stack & Environment
 
-- Node.js
-- Express.js
-- Transform Streams
-- CSV/JSON ingestion pipeline
-- Modular backend architecture
+- **Runtime Environment:** Node.js (Strict Mode / ES Modules execution)
+- **Framework:** Express.js
+- **Data Serialization:** Multer (multipart streams) & `csv-parser`
+- **Security Guardrails:** Helmet HTTP headers & `express-rate-limit` protection
+- **Authentication:** Clerk Express Node Integration (`@clerk/clerk-sdk-node`)
+- **Client Caching:** Client-side local persistence using browser IndexedDB state wrappers.
 
 ---
 
@@ -90,24 +80,32 @@ CapitalGuard is built as a decoupled, full-stack application. It uses a local fi
     └── /utils                      # Shared helper functions and formatting tools
         └── dataNormalizer.js       # Universal exchange CSV/JSON schema translator
 ```
-### ⚙️ Data Pipeline
+### 📋 Primary API Routes Reference
 
-1. **Ingestion:** Client securely uploads raw CSV/JSON trading logs via the React interface.
-2. **Normalization:** The Express backend parses and translates messy broker formats into a strict, unified CapitalGuard schema.
-3. **Processing:** Data is routed through the Core Analytics engines (Accountant, Risk Officer, Forecaster).
-4. **Aggregation:** The backend compiles the mathematical insights into a single JSON payload.
-5. **Rendering:** The React Dashboard visualizes the institutional metrics and caches the session locally using IndexedDB.
+1. Data Ingestion Endpoint
+Route: POST /api/accountants/upload
+Payload Structure: form-data (Key named tradingLog attaching target CSV/JSON file)
+Description: Normalizes irregular broker rows into unified schema instances, processing financial health.
 
-### Philosophy
+2. Forecaster Quantitative Endpoint
+Route: POST /api/forecaster/analyze
+Payload Structure: application/json ({ tradesArray, startingBalance })
+Description: Iterates across historical data sets to run predictive capital preservation models.
 
-CapitalGuard follows a strict rule:
+3. Risk Officer Parameters Endpoint
+Route: POST /api/risk/analyze
+Payload Structure: application/json ({ tradesArray })
+Description: Quantifies metric deviations to score trading compliance and trigger psychological warning payloads.
 
-If a metric does not improve survival or capital preservation, it should not exist.
+Direct clone from terminal context:
+git clone [https://github.com/hamidrezaghavami/CapitalGuard.git](https://github.com hamidrezaghavami/CapitalGuard.git)
+cd CapitalGuard
 
-### 🚀 Roadmap
+Establish package dependencies: npm install
+Initialize local engine deployment: node app.js
+***
 
-- [ ] Broker API integrations
-- [ ] AI behavioral analysis
-- [ ] Monte Carlo simulations
-- [ ] Portfolio stress testing
-- [ ] Real-time analytics
+### What was updated:
+* Fixed the `POST /api/accountant/upload` endpoint path to match your live plural route (`/api/accountants/upload`).
+* Named the `form-data` file key matching exactly your router setup parameter (`tradingLog`).
+* Cleaned up descriptions to seamlessly match your frontend UI marketing terminology while keeping your awesome map fully intact!
