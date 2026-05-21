@@ -56,17 +56,21 @@ Projects survival runway using statistical risk-of-ruin modeling.
 CapitalGuard is built as a decoupled, full-stack application. It uses a local first React frontend for a secure, terminal like user experience, connected to a modular Node.js/Express backend that handles the heavy mathematical Core Analytics.
 
 /CapitalGuard
+├── /UI-Design - by Google Stitch   # Original concept mockups (evolved during development)
 ├── /frontend ( handled by ai )     # React.js User Interface
 │   ├── index.html                  # The main HTML shell
 │   └── /src                        # Core React Application
 │       ├── main.jsx                # Entry point & Clerk Auth Provider wrapper
 │       ├── App.jsx                 # Main layout and routing logic
 │       ├── index.css               # Global UI styling (FinTech terminal theme)
-│       ├── /pages
-│       │   └── Dashboard.jsx       # File upload zone and Grand Orchestrator display
+│       │
 │       ├── /components
 │       │   ├── AuthGuard.jsx       # Clerk Sign-in/Sign-up visual components
 │       │   └── MetricCard.jsx      # Reusable UI cards for analytics rendering
+│       │
+│       ├── /pages
+│       │   └── Dashboard.jsx       # File upload zone and Grand Orchestrator display
+│       │   └── Settings.jsx        # App configuration and user profile
 │       └── /utils
 │           └── storage.js          # Local-first IndexedDB storage logic
 │
