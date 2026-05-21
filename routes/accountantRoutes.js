@@ -46,19 +46,31 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
     const fileType = req.file.mimetype; // it's JSON or CSV
 
     // JSON branch
+        // JSON branch
     if (fileType === 'application/json') { 
         try { 
             const rawData = fs.readFileSync(filePath, 'utf-8');
             const parsedData = JSON.parse(rawData);
+            const trades = parsedData.TradeHistory;
 
-            // where data loaded
-            const chartMetrics = calculateFeeDrain(parsedData);
+            // Fire ALL 5 Mathematical Engines!
+            const accountantMetrics = calculateFeeDrain(trades);
+            const dangerData = calculateDistanceToDanger(trades);
+            const phychologyData = calculatePsychologicalDrawdown(trades);
+            const runwayData = calculateSurvivalRunway(trades);
+            const ruinData = calculateRiskOfRuin(trades);
+
             return res.json({
-                message: "JSON file parsed and analyzed successfully!",
-                analytics: chartMetrics,
-                trades: parsedData
+                message: "Dashboard data completely analyzed!",
+                analytics: {
+                    accountant: accountantMetrics,
+                    riskOfficer: { distanceToDanger: dangerData, phychology: phychologyData },
+                    forecaster: { runway: runwayData, riskOfRuin: ruinData }
+                },
+                trades: trades
             });
         } catch (err) {
+            console.error("MATH ENGINE CRASH:", err);
             return res.status(500).json({ error: "Failed to parse JSON file." });
         }
     }
