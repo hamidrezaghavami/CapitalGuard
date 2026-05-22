@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-// NEW: Import Recharts
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 export default function Dashboard() {
@@ -24,7 +23,6 @@ export default function Dashboard() {
     longevityStatus: "Active"
   });
 
-  // NEW: State for the dynamic chart data
   const [chartData, setChartData] = useState([]);
 
   // Load saved data when returning to Dashboard
@@ -74,21 +72,8 @@ export default function Dashboard() {
     }
   }, []);
 
-  const onDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-  
-  const onDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const onDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const file = e.dataTransfer.files[0];
+  // --- NEW: Reusable File Upload Logic for both Drop & Mobile Tap ---
+  const processFile = async (file) => {
     if (!file) return;
 
     const formData = new FormData();
@@ -149,7 +134,7 @@ export default function Dashboard() {
 
         setChartData(curveData);
 
-        // SAVE DATA TO LOCAL STORAGE FOR JOURNAL PORTABILITY
+        // SAVE DATA TO LOCAL STORAGE
         localStorage.setItem("capitalGuard_trades", JSON.stringify(backendData.trades));
         localStorage.setItem("capitalGuard_analytics", JSON.stringify(analytics));
       }
@@ -160,7 +145,29 @@ export default function Dashboard() {
     }
   };
 
-  // NEW: Sleek custom tooltip for hovering over the chart
+  // Drag handlers
+  const onDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const onDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const onDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    await processFile(e.dataTransfer.files[0]);
+  };
+
+  // NEW: Mobile / Click handler
+  const onFileSelect = async (e) => {
+    await processFile(e.target.files[0]);
+    e.target.value = null; // Reset input so they can upload the same file again if needed
+  };
+
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const currentEquity = payload[0].value;
@@ -179,7 +186,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-8 animate-in fade-in duration-500 pb-16">
       {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
@@ -289,14 +296,15 @@ export default function Dashboard() {
       {/* BOTTOM ACTION & CHART ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
         
-        {/* UPLOAD ZONE */}
+        {/* NEW MOBILE-FRIENDLY UPLOAD ZONE */}
         <div className="lg:col-span-1 flex flex-col">
           <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-2">DROP YOUR TRADE HISTORY</h3>
           <p className="text-xs text-muted mb-6 leading-relaxed">
             Export your CSV or JSON from your broker or exchange and drop it here to begin the analysis.
           </p>
           
-          <div 
+          <label 
+            htmlFor="mobile-upload"
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
@@ -306,10 +314,19 @@ export default function Dashboard() {
                 : 'border-[#1F2937] bg-[#131A28] hover:border-[#3B82F6]/50 hover:bg-[#1C263A]'
             }`}
           >
+            {/* Hidden Input that triggers when the box is tapped! */}
+            <input 
+              type="file" 
+              id="mobile-upload" 
+              className="hidden" 
+              accept=".csv,.json" 
+              onChange={onFileSelect}
+            />
+            
             <div className="text-4xl mb-3">📤</div>
             <p className="text-sm font-bold text-white mb-1">Upload Trade History</p>
-            <p className="text-xs text-muted text-center">Only CSV or JSON files supported</p>
-          </div>
+            <p className="text-xs text-muted text-center">Tap or Drop CSV/JSON</p>
+          </label>
         </div>
 
         {/* REAL DYNAMIC CHART ZONE */}
@@ -340,7 +357,6 @@ export default function Dashboard() {
                   
                   <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#3B82F6', strokeWidth: 1, strokeDasharray: '5 5' }} />
                   
-                  {/* Draws a red dashed line at your starting $2000 balance! */}
                   <ReferenceLine y={2000} stroke="#EF4444" strokeDasharray="3 3" opacity={0.5} />
                   
                   <Line 

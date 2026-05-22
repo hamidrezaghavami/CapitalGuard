@@ -16,13 +16,13 @@ CapitalGuard is a premium, data-driven financial backend engine engineered to pr
 
 ## Core Modules
 
-### The Performance Audit (Accountant Engine)
+### The Accountant (Accountant Engine)
 Intercepts uploaded broker files to isolate and calculate real returns against hidden transaction commission drains.
 
-### Drawdown Defense (Risk Officer Engine)
-Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score while flagging psychological anomalies (Stratugy(Green), Revange(Red), News(White),Emotion(Yellow)) straight from Trade's tags.
+### Risk Manager (Risk Officer Engine)
+Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score while flagging psychological anomalies (STRATEGY (Green), REVENGE (Red), NEWS (White), EMOTION (Yellow)) straight from Trade's tags.
 
-### Growth Projections (Forecaster Engine)
+### The Forecaster (Forecaster Engine)
 Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, generating statistical probability structures for Capital Runway horizons and Risk of Ruin margins.
 
 ---
@@ -34,8 +34,7 @@ Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, g
 - **Data Serialization:** Multer (multipart streams) & `csv-parser`
 - **Security Guardrails:** Helmet HTTP headers & `express-rate-limit` protection
 - **Authentication:** Clerk Express Node Integration (`@clerk/clerk-sdk-node`)
-- **Client Caching:** Client-side local persistence using browser IndexedDB state wrappers.
-
+- **Client Caching:** Client-side local persistence using browser `localStorage` for rapid journal loading and offline portability.
 ---
 
 ## Project Structure
@@ -43,59 +42,41 @@ Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, g
 ```bash
 ## 🏗️ Full-Stack Architecture
 
-CapitalGuard is built as a decoupled, full-stack application. It uses a local first React frontend for a secure, terminal like user experience, connected to a modular Node.js/Express backend that handles the heavy mathematical Core Analytics.
+CapitalGuard is built as a decoupled, full-stack application. It uses a local-first React frontend for a secure, terminal-like user experience, connected to a modular Node.js/Express backend that handles the heavy mathematical Core Analytics.
 
 /CapitalGuard
-├── /UI-Design - by Google Stitch   # Original concept mockups (evolved during development)
-├── /frontend ( handled by ai )     # React.js User Interface
+├── /UI-Design                      # Original concept mockups 
+├── /Frontend                       # React.js User Interface
 │   ├── index.html                  # The main HTML shell
 │   └── /src                        # Core React Application
 │       ├── main.jsx                # Entry point & Clerk Auth Provider wrapper
-│       ├── App.jsx                 # Main layout and routing logic
-│       ├── index.css               # Global UI styling (FinTech terminal theme)
+│       ├── App.jsx                 # Routing logic
+│       ├── Layout.jsx              # Main Sidebar and FinTech Terminal Layout
+│       ├── index.css               # Global UI styling (Glassmorphism & Neon)
 │       │
-│       ├── /components
-│       │   ├── AuthGuard.jsx       # Clerk Sign-in/Sign-up visual components
-│       │   └── MetricCard.jsx      # Reusable UI cards for analytics rendering
-│       │
-│       ├── /pages
-│       │   └── Dashboard.jsx       # File upload zone and Grand Orchestrator display
-│       │
-│       └── /utils
-│           └── storage.js          # Local-first IndexedDB storage logic
+│       └── /pages
+│           ├── Dashboard.jsx       # File upload zone, Metric Cards, & Dynamic Equity Chart
+│           └── Journal.jsx         # Custom-categorized record of ledger executions with color-coded tags
 │
 └── /backend                        # Node.js / Express Core Engine
-    ├── app.js                      # Main entry point, Express setup, and global middleware
-    ├── /routes                     # API Routing Layer (Express Routers)
-    │   ├── authRoutes.js           # Clerk.com authentication endpoints
-    │   ├── accountantRoutes.js     # Trade parsing and nominal vs. fee drain endpoints
-    │   ├── riskRoutes.js           # Risk Officer endpoints (Stop-Loss Triggers)
-    │   └── forecasterRoutes.js     # Forecaster endpoints (Risk-of-Ruin, Runway)
+    ├── app.js                      # Main entry point, CORS, Rate Limiting, and Clerk Middleware
+    ├── /routes                     
+    │   └── accountantRoutes.js     # Single Unified API Route (Fires all 5 engines simultaneously)
     │
     ├── /Controllers                # Core Analytics Layer (Math & Logic Engines)
-    │   ├── accountantController.js # Engine for parsing CSV logic and fee calculations
-    │   ├── riskController.js       # Engine for psychological drawdown & danger distance
-    │   └── forecasterController.js # Engine for statistical modeling and probability
+    │   ├── accountantController.js # Nominal vs. Fee drain calculations & Win Rate
+    │   ├── riskController.js       # Psychological Drawdown & Distance to Danger limits
+    │   └── forecasterController.js # Risk-of-Ruin probabilities & Capital Runway modeling
     │
-    └── /utils                      # Shared helper functions and formatting tools
+    └── /utils                      
         └── dataNormalizer.js       # Universal exchange CSV/JSON schema translator
 ```
 ### 📋 Primary API Routes Reference
 
-1. Data Ingestion Endpoint
-Route: POST /api/accountants/upload
-Payload Structure: form-data (Key named tradingLog attaching target CSV/JSON file)
-Description: Normalizes irregular broker rows into unified schema instances, processing financial health.
-
-2. Forecaster Quantitative Endpoint
-Route: POST /api/forecaster/analyze
-Payload Structure: application/json ({ tradesArray, startingBalance })
-Description: Iterates across historical data sets to run predictive capital preservation models.
-
-3. Risk Officer Parameters Endpoint
-Route: POST /api/risk/analyze
-Payload Structure: application/json ({ tradesArray })
-Description: Quantifies metric deviations to score trading compliance and trigger psychological warning payloads.
+1. **Unified Data Ingestion & Engine Trigger Endpoint**
+- **Route:** `POST /api/accountants/upload`
+- **Payload Structure:** `multipart/form-data` (Key named `tradingLog` attaching target CSV/JSON file)
+- **Description:** This single Master Endpoint ingests irregular broker logs, normalizes them into a unified schema, and simultaneously fires all 5 mathematical engines (Accountant, Forecaster, Risk Officer). It returns a complete, structured JSON payload of your entire financial health to dynamically update the React dashboard.
 
 Direct clone from terminal context:
 git clone [https://github.com/hamidrezaghavami/CapitalGuard.git].
