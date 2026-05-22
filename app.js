@@ -4,7 +4,6 @@ import helmet from 'helmet';
 import cors from 'cors';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 import authRoutes from './routes/authRoutes.js';
-
 import accountantRoutes from './routes/accountantRoutes.js';
 import forecasterRoutes from './routes/forecasterRoutes.js';
 import riskRoutes from './routes/riskRoutes.js';
@@ -30,19 +29,25 @@ const limiter = rateLimit({
     message: { error: "Too many requests from this IP, please try again after 15 minutes." }
 });
 
-// security Guard
+// security Guard (Rate Limiting)
 app.use('/api/auth', limiter);
 app.use('/api/accountants', limiter);
 app.use('/api/forecaster', limiter);
 app.use('/api/risk', limiter);
 
-// app.use(ClerkExpressRequireAuth());
-
-// Routers
+// Routers with Clerk Security Applied ONLY to Protected Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/accountants', accountantRoutes);
-app.use('/api/forecaster', forecasterRoutes);
-app.use('/api/risk', riskRoutes);
+app.use('/api/accountants', ClerkExpressRequireAuth(), accountantRoutes);
+app.use('/api/forecaster', ClerkExpressRequireAuth(), forecasterRoutes);
+app.use('/api/risk', ClerkExpressRequireAuth(), riskRoutes);
+
+// Error Handler to nicely catch Clerk "Unauthorized" rejections without crashing the server
+app.use((err, req, res, next) => {
+  if (err.message === 'Unauthenticated' || err.name === 'UnauthorizedError') {
+    return res.status(401).json({ error: "Unauthorized: Invalid or missing Clerk Token" });
+  }
+  next(err);
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on the port ${PORT}`);

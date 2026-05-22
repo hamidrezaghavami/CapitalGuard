@@ -51,7 +51,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
         try { 
             const rawData = fs.readFileSync(filePath, 'utf-8');
             const parsedData = JSON.parse(rawData);
-            const trades = parsedData.TradeHistory;
+            const trades = parsedData.TradeHistory || parsedData;
 
             // Fire ALL 5 Mathematical Engines!
             const accountantMetrics = calculateFeeDrain(trades);
