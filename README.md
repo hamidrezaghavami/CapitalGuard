@@ -17,10 +17,10 @@ CapitalGuard is a premium, data-driven financial backend engine engineered to pr
 ## Core Modules
 
 ### The Performance Audit (Accountant Engine)
-Intercepts uploaded broker files to isolate and calculate real returns against hidden transaction commission drains using a standard $2,000 capital baseline.
+Intercepts uploaded broker files to isolate and calculate real returns against hidden transaction commission drains.
 
 ### Drawdown Defense (Risk Officer Engine)
-Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score while flagging psychological anomalies (Revenge Trading, FOMO, Greed) straight from data tags.
+Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score while flagging psychological anomalies (Stratugy(Green), Revange(Red), News(White),Emotion(Yellow)) straight from Trade's tags.
 
 ### Growth Projections (Forecaster Engine)
 Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, generating statistical probability structures for Capital Runway horizons and Risk of Ruin margins.
@@ -98,14 +98,9 @@ Payload Structure: application/json ({ tradesArray })
 Description: Quantifies metric deviations to score trading compliance and trigger psychological warning payloads.
 
 Direct clone from terminal context:
-git clone [https://github.com/hamidrezaghavami/CapitalGuard.git]
+git clone [https://github.com/hamidrezaghavami/CapitalGuard.git].
 cd CapitalGuard
 
 Establish package dependencies: npm install
 Initialize local engine deployment: node app.js
 ***
-
-### What was updated:
-* Fixed the `POST /api/accountant/upload` endpoint path to match your live plural route (`/api/accountants/upload`).
-* Named the `form-data` file key matching exactly your router setup parameter (`tradingLog`).
-* Cleaned up descriptions to seamlessly match your frontend UI marketing terminology while keeping your awesome map fully intact!
