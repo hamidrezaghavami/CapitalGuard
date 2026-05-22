@@ -1,2 +1,133 @@
 /* Your global styles to make the UI look like a sleek,
 dark-mode institutional FinTech terminal. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #0A0E17;     
+  --bg-secondary: #131A28;   
+  --bg-tertiary: #1C263A;    
+  --text-primary: #F3F4F6;   
+  --text-secondary: #9CA3AF; 
+  --accent-green: #10B981;   
+  --accent-blue: #3B82F6;    
+  --accent-red: #EF4444;     
+  --accent-amber: #F59E0B;   
+  --border-color: #1F2937;   
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.glass-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.text-primary { color: var(--text-primary) !important; }
+.text-muted { color: var(--text-secondary) !important; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* =========================================
+   CLERK AUTHENTICATION UI FIXES
+   ========================================= */
+.cl-developmentMode,
+.cl-userButtonPopoverFooter,
+.cl-footerAction,
+[href*="clerk.dev"] {
+  display: none !important;
+}
+
+/* Fix the width glitch: stop popovers & modals from stretching to 100% */
+.cl-userButtonPopoverCard, 
+.cl-modalContent .cl-cardBox,
+.cl-modalContent .cl-card {
+  width: auto !important;
+  max-width: none !important;
+}
+
+/* Theme the "Manage Account" User Profile Modal */
+.cl-modalContent, .cl-userProfileRoot {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+}
+
+/* Remove the striped Dev Mode background safely without breaking buttons */
+.cl-userProfileRoot,
+.cl-userProfileRoot > div,
+.cl-modalContent,
+.cl-modalContent > div {
+  background-image: none !important;
+}
+
+.cl-navbar { background: var(--bg-primary) !important; border-right: 1px solid var(--border-color) !important; }
+.cl-pageScrollBox, .cl-scrollBox { background-color: var(--bg-secondary) !important; }
+.cl-headerTitle, .cl-headerSubtitle, .cl-profileSectionTitleText { color: var(--text-primary) !important; }
+
+/* Default state for sidebar buttons */
+.cl-navbarButton { 
+  color: var(--text-secondary) !important; 
+  transition: all 0.2s ease;
+}
+
+/* Active and Hover states - sleek light-blue highlight! */
+.cl-navbarButton:hover,
+.cl-navbarButton[data-active="true"],
+.cl-navbarButton[aria-current="page"] {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: var(--accent-blue) !important;
+  border-radius: 8px !important;
+}
+
+.cl-formFieldInput {
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Make Clerk's Sign Out button Red */
+.cl-userButtonPopoverActionButton:last-child,
+.cl-userButtonPopoverActionButton:last-child * { color: var(--accent-red) !important; }
+.cl-userButtonPopoverActionButton:last-child:hover,
+.cl-userButtonPopoverActionButton:last-child:hover * { color: #f87171 !important; }
+
+/* --- BRUTE FORCE HIDE CLERK BRANDING --- */
+a[href*="clerk.com"], 
+a[href*="clerk.dev"],
+.cl-internal-b3al4p,
+.cl-internal-1dauvpw,
+div[class*="developmentMode"],
+div[class*="cl-userProfile-root"] [class*="cl-internal"] > a {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Kills the striped background container specifically */
+.cl-userProfileRoot > div > div:last-child {
+  display: none !important;
+}
+
+/* Completely annihilate the orange stripes inside the left sidebar */
+.cl-navbar,
+.cl-navbar *,
+.cl-navbar > div {
+  background-image: none !important;
+}

@@ -15,7 +15,8 @@ export const calculateSurvivalRunway = (tradeArray, startingBalance = 2000) => {
     let runningNetPnL = 0; // track actual real balance
 
     tradeArray.forEach(trade => {
-        const pnl = parseFloat(trade.pnl || 0 );
+        // FIXED: Added trade.ResultUSD to support the AI JSON
+        const pnl = parseFloat(trade.pnl || trade.ResultUSD || 0 );
         const fee = parseFloat(trade.feePaid || trade.fee || 0 );
 
         runningNetPnL += (pnl - fee);
@@ -70,7 +71,8 @@ export const calculateRiskOfRuin = (tradeArray, startingBalance = 2000) => {
     let runningNetPnL = 0;
 
     tradeArray.forEach(trade => {
-        const pnl = parseFloat(trade.pnl || 0 );
+        // FIXED: Added trade.ResultUSD to support the AI JSON
+        const pnl = parseFloat(trade.pnl || trade.ResultUSD || 0 );
         const fee = parseFloat(trade.fee || 0 );
         const netTrade = pnl - fee; // count hidden fee
 
@@ -89,7 +91,7 @@ export const calculateRiskOfRuin = (tradeArray, startingBalance = 2000) => {
 
     // handle cases ( 0 balance, no loss, 0 trade ) 
     if ( latestBalance <= 0 || (totalTrades > 0 && winningTrades === 0)) {
-        return { riskOfRuinPercent: 100, winRatePercent: 0, status: "GUARANTEED RUIN"};
+        return { riskOfRuinPercent: 100, winRatePercent: 0, status: "FATAL"};
     }
 
     if (losingTrades === 0 || totalTrades === 0 ) { 
@@ -98,7 +100,8 @@ export const calculateRiskOfRuin = (tradeArray, startingBalance = 2000) => {
 
     // calculating core probability
     const winRate = winningTrades / totalTrades;
-    const lossRate = lossingTrades / totalTrades; // ( 1 - W )
+    // FIXED CRASH: "lossingTrades" was misspelled, which would have crashed the server!
+    const lossRate = losingTrades / totalTrades; // ( 1 - W )
 
     const averageLoss = totalLossAmount / losingTrades;
     const capitalUnits = latestBalance / averageLoss;
@@ -117,8 +120,8 @@ export const calculateRiskOfRuin = (tradeArray, startingBalance = 2000) => {
     return { 
         winRatePercent: Math.round(winRate * 100),
         capitalUnits: Math.floor(capitalUnits),
-        // cap is at 99.99% so it's realistic statistics, keep 2 decimal
-        riskOfRuinPercent: Math.min(parseFloat(riskOfRuinPercent.toFixed(2), 99.99)),
+        // FIXED CRASH: parseFloat syntax error corrected
+        riskOfRuinPercent: Math.min(parseFloat(riskOfRuinPercent.toFixed(2)), 99.99),
         status: riskOfRuinPercent > 50 ? "DANGER" : "SAFE"
     };
 };

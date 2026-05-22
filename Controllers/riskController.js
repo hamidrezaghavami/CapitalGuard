@@ -3,14 +3,14 @@ export const calculateDistanceToDanger = (tradesArray) => {
     let totalLosingTrades = 0;
     let rulesBrokenTrades = 0;
 
-    
     // clean and extract numbers for specific trade
     const DistanceToDanger = tradesArray.forEach(trade => {
 
-        const pnl = parseFloat(trade.pnl || 0 );
-        const entryPrice = parseFloat(trade.entryPrice || 0 );
-        const exitPrice = parseFloat(trade.exitPrice || 0 );
-        const stopLoss = parseFloat(trade.stopLoss || 0 );
+        // FIXED: Added the AI JSON capital letter variations!
+        const pnl = parseFloat(trade.pnl || trade.ResultUSD || 0 );
+        const entryPrice = parseFloat(trade.entryPrice || trade.EntryPrice || 0 );
+        const exitPrice = parseFloat(trade.exitPrice || trade.ExitPrice || 0 );
+        const stopLoss = parseFloat(trade.stopLoss || trade.StopLoss || trade.SL || 0 );
         
         // skip winning trades
         if ( pnl >= 0 ) {
@@ -32,8 +32,6 @@ export const calculateDistanceToDanger = (tradesArray) => {
     // calculate final KPI core test out of 100
     const disciplineScore = totalLosingTrades > 0
     ? ((totalLosingTrades - rulesBrokenTrades) / totalLosingTrades ) * 100 : 100;
-    // if Discipline Score is equal to TotalLost bigger than 0 then print 
-    // totalLost - brokenTrade => result of them 
 
     return { 
         totalLosingTrades,
@@ -50,7 +48,8 @@ export const calculatePsychologicalDrawdown = (tradesArray) => {
 
     // loop for see every trade for tag
     tradesArray.forEach(trade => {
-        const pnl = parseFloat(trade.pnl || 0 );
+        // FIXED: Added trade.ResultUSD
+        const pnl = parseFloat(trade.pnl || trade.ResultUSD || 0 );
 
         if ( pnl >= 0 ) return;
 
@@ -64,27 +63,26 @@ export const calculatePsychologicalDrawdown = (tradesArray) => {
             tagCounts[tag] += 1;
             tagLosses[tag] += Math.abs(pnl);
         }
+    }); 
+    
+    // finding which emotions caused the most financial damage
+    let dominantEmotion = "none";
+    let maxEmotionLoss = 0;
 
-        // finding which emotions caused the most financial damage
-        let dominantEmotion = "none";
-        let maxEmotionLoss = 0;
+    for ( const tag in tagLosses ) {
 
-        for ( const tag in tagLosses ) {
+        if ( tag === "strategic" ) continue;
 
-            if ( tag === "strategic" ) continue;
-
-            if ( tagLosses[tag] > maxEmotionLoss ) { 
-                maxEmotionLoss = tagLosses[tag];
-                dominantEmotion = tag;
-            }
+        if ( tagLosses[tag] > maxEmotionLoss ) { 
+            maxEmotionLoss = tagLosses[tag];
+            dominantEmotion = tag;
         }
-    });
+    }
 
     // trigger warning if emotional loss consume more than 50% of total damage
     const emotionalLossTrade = totalCashLoss - tagLosses.strategic;
     const haltTradingWarning = totalCashLoss > 0 && ( emotionalLossTrade / totalCashLoss ) > 0.50;
-    const dominantEmotion = "Greed";
-
+    
     // return everything to show on your dashboards
     return { 
         tagCounts,
