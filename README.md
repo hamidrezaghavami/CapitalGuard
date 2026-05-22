@@ -60,7 +60,7 @@ CapitalGuard is built as a decoupled, full-stack application. It uses a local fi
 │       │
 │       ├── /pages
 │       │   └── Dashboard.jsx       # File upload zone and Grand Orchestrator display
-│       │   └── Settings.jsx        # App configuration and user profile
+│       │
 │       └── /utils
 │           └── storage.js          # Local-first IndexedDB storage logic
 │

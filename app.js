@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 // secure HTTP headers sent from your server to the browser
 app.use(cors({
-    origin: 'http://localhost:5173', // Your React URL
+    origin: 'http://localhost:5173', // React URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
