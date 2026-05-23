@@ -28,6 +28,7 @@ Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, g
 
 ### The Trading Journal (UI Ledger)
 A custom-categorized, visually distinct interactive ledger. This is where users interact with their trades and manually flag psychological anomalies (STRATEGY (Green), REVENGE (Red), NEWS (White), EMOTION (Yellow)) that feed directly into the Risk Manager's backend logic.
+
 ---
 
 ## Project Structure
