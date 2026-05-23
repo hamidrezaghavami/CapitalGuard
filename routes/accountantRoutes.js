@@ -10,6 +10,11 @@ import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../Con
 
 const router = express.Router();
 
+// Create uploads folder automatically if it doesn't exist
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
+
 // storage configuration for taking CSV/JSON history from User
 const storage = multer.diskStorage({
     destination: (req, file, cb) => { 
