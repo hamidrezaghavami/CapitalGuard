@@ -21,21 +21,13 @@ CapitalGuard is a premium, data-driven financial backend engine engineered to pr
 Intercepts uploaded broker files to isolate and calculate real returns against hidden transaction commission drains.
 
 ### Risk Manager (Risk Officer Engine)
-Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score while flagging psychological anomalies (STRATEGY (Green), REVENGE (Red), NEWS (White), EMOTION (Yellow)) straight from Trade's tags.
+Monitors systemic trading behavior profiles. It compares planned risk boundaries against real execution exits to compute a strict compliance Discipline Score, and acts as the backend analyzer for psychological drawdowns.
 
 ### The Forecaster (Forecaster Engine)
 Simulates strategic survival metrics via Gambler's Ruin mathematical modeling, generating statistical probability structures for Capital Runway horizons and Risk of Ruin margins.
 
----
-
-## Tech Stack & Environment
-
-- **Runtime Environment:** Node.js (Strict Mode / ES Modules execution)
-- **Framework:** Express.js
-- **Data Serialization:** Multer (multipart streams) & `csv-parser`
-- **Security Guardrails:** Helmet HTTP headers & `express-rate-limit` protection
-- **Authentication:** Clerk Express Node Integration (`@clerk/clerk-sdk-node`)
-- **Client Caching:** Client-side local persistence using browser `localStorage` for rapid journal loading and offline portability.
+### The Trading Journal (UI Ledger)
+A custom-categorized, visually distinct interactive ledger. This is where users interact with their trades and manually flag psychological anomalies (STRATEGY (Green), REVENGE (Red), NEWS (White), EMOTION (Yellow)) that feed directly into the Risk Manager's backend logic.
 ---
 
 ## Project Structure
