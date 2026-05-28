@@ -10,12 +10,10 @@ import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../Con
 
 const router = express.Router();
 
-// Create uploads folder automatically if it doesn't exist
 if (!fs.existsSync('uploads')) {
     fs.mkdirSync('uploads');
 }
 
-// storage configuration for taking CSV/JSON history from User
 const storage = multer.diskStorage({
     destination: (req, file, cb) => { 
         cb(null, 'uploads/');
@@ -25,45 +23,42 @@ const storage = multer.diskStorage({
     }
 });
 
-// file type Guard (Filter)
 const fileFilter = (req, file, cb ) => { 
-    const allowedType = ['.csv', '.json']; // only these formats are allowed
+    const allowedType = ['.csv', '.json'];
     const ext = path.extname(file.originalname).toLowerCase();
-
     if ( allowedType.includes(ext)) { 
-        cb(null, true); // accept file in those formats
+        cb(null, true);
     } else { 
         cb(new Error('Invalid file type. Only CSV and JSON are allowed.'), false);
     }
 }
 
-// initialise Multer with our rules
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
-// the router for taking file from user by uploading on website
 router.post('/upload', upload.single('tradingLog'), (req, res) => {
-
-    if (!req.file) { // safety check, did they upload the file?
+    if (!req.file) { 
         return res.status(400).json({ message: "Please upload a file. "});
     }
 
-    const filePath = req.file.path; // take file JSON trade
-    const fileType = req.file.mimetype; // it's JSON or CSV
+    const filePath = req.file.path; 
+    const fileType = req.file.mimetype; 
+    
+    // NEW: Capture custom starting balance from Frontend (Defaults to 2000 if empty)
+    const customStartingBalance = parseFloat(req.body.startingBalance) || 2000;
 
-    // JSON branch
-        // JSON branch
     if (fileType === 'application/json') { 
         try { 
             const rawData = fs.readFileSync(filePath, 'utf-8');
             const parsedData = JSON.parse(rawData);
             const trades = parsedData.TradeHistory || parsedData;
 
-            // Fire ALL 5 Mathematical Engines!
             const accountantMetrics = calculateFeeDrain(trades);
             const dangerData = calculateDistanceToDanger(trades);
             const phychologyData = calculatePsychologicalDrawdown(trades);
-            const runwayData = calculateSurvivalRunway(trades);
-            const ruinData = calculateRiskOfRuin(trades);
+            
+            // Send custom balance to Forecaster engines
+            const runwayData = calculateSurvivalRunway(trades, customStartingBalance);
+            const ruinData = calculateRiskOfRuin(trades, customStartingBalance);
 
             return res.json({
                 message: "Dashboard data completely analyzed!",
@@ -72,7 +67,8 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     riskOfficer: { distanceToDanger: dangerData, phychology: phychologyData },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
                 },
-                trades: trades
+                trades: trades,
+                startingBalance: customStartingBalance // Send back to frontend so graph knows where to start
             });
         } catch (err) {
             console.error("MATH ENGINE CRASH:", err);
@@ -86,18 +82,17 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
         fs.createReadStream(filePath)
         .pipe(csvParser()) 
         .on('data', (data) => { 
-            // Translate the messy raw row into our strict schema
             const cleanTrade = normalizeTrade(data);
             results.push(cleanTrade);
         })
         .on('end', () => {
             const accountantMetrics = calculateFeeDrain(results);
-
             const dangerData = calculateDistanceToDanger(results);
             const phychologyData = calculatePsychologicalDrawdown(results);
-
-            const runwayData = calculateSurvivalRunway(results);
-            const ruinData = calculateRiskOfRuin(results);
+            
+            // Send custom balance to Forecaster engines
+            const runwayData = calculateSurvivalRunway(results, customStartingBalance);
+            const ruinData = calculateRiskOfRuin(results, customStartingBalance);
 
             return res.json({
                 message: "Dashboard data completely analyzed!",
@@ -106,14 +101,14 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     riskOfficer: { distanceToDanger: dangerData, phychology: phychologyData },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
                 },
-                trades: results
+                trades: results,
+                startingBalance: customStartingBalance // Send back to frontend so graph knows where to start
             });
-
         })
         .on('error', (err) => { 
             return res.status(500).json({ error: "Failed to parse CSV file!." });
         });
     }
-}); // we did Data Ingestion & Routing
+}); 
 
 export default router;
