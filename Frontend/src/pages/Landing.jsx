@@ -152,9 +152,9 @@ const Landing = () => {
           </div>
           <p className="text-[10px] text-gray-500 tracking-wider">© 2026 CapitalGuard. Institutional Grade Security.</p>
         </div>
-        <div className="text-[11px] text-gray-400 font-medium tracking-wider hover:text-white cursor-pointer transition-colors">
+        <a href="mailto:hamidr.ghavami@gmail.com" className="text-[11px] text-gray-400 font-medium tracking-wider hover:text-white transition-colors">
           Contact
-        </div>
+          </a>
       </footer>
 
     </div>
