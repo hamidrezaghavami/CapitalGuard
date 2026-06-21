@@ -1,8 +1,8 @@
 // Your main layout and router. It checks the user's secure token 
-// and decides whether to show the Login screen or the main Dashboard.
+// and decides whether to show the Landing screen or the main Dashboard.
 import React, { useState } from 'react'
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react'
-import AuthGuard from './components/AuthGuard'
+import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Journal from './pages/Journal'
 
@@ -12,10 +12,12 @@ export default function App() {
 
   return (
     <>
+      {/* 1. Show the Premium Landing Page to visitors who are NOT logged in */}
       <SignedOut>
-        <AuthGuard />
+        <Landing />
       </SignedOut>
 
+      {/* 2. Show the secure Dashboard to users who ARE logged in */}
       <SignedIn>
         <div className="flex flex-col md:flex-row min-h-screen bg-[#0A0E17]">
           
