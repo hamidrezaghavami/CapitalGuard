@@ -5,6 +5,10 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceL
 export default function Dashboard() {
   const [isDragging, setIsDragging] = useState(false);
   const [startingBalance, setStartingBalance] = useState(""); 
+  
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const { getToken } = useAuth();
   
   const [metrics, setMetrics] = useState({
@@ -14,14 +18,14 @@ export default function Dashboard() {
   });
 
   const [chartData, setChartData] = useState([]);
-  const [chartStartLine, setChartStartLine] = useState(2000);
+  const [chartStartLine, setChartStartLine] = useState(0);
 
   useEffect(() => {
     const cachedTrades = localStorage.getItem("capitalGuard_trades");
     const cachedAnalytics = localStorage.getItem("capitalGuard_analytics");
-    const cachedBalance = localStorage.getItem("capitalGuard_balance") || "2000";
+    const cachedBalance = localStorage.getItem("capitalGuard_balance");
 
-    if (cachedTrades && cachedAnalytics) {
+    if (cachedTrades && cachedAnalytics && cachedBalance) {
       const trades = JSON.parse(cachedTrades);
       const analytics = JSON.parse(cachedAnalytics);
       const baseBalance = parseFloat(cachedBalance);
@@ -64,6 +68,7 @@ export default function Dashboard() {
 
     if (file.size > 2 * 1024 * 1024) {
         alert("File too large! Please upload a trade history file smaller than 2MB.");
+        setIsLoading(false);
         return;
     }
 
@@ -83,7 +88,7 @@ export default function Dashboard() {
 
       const backendData = await response.json();
       const analytics = backendData.analytics;
-      const baseBalance = parseFloat(backendData.startingBalance || startingBalance || 2000);
+      const baseBalance = parseFloat(backendData.startingBalance || startingBalance);
 
       setChartStartLine(baseBalance);
 
@@ -118,16 +123,33 @@ export default function Dashboard() {
         localStorage.setItem("capitalGuard_analytics", JSON.stringify(analytics));
         localStorage.setItem("capitalGuard_balance", baseBalance.toString());
       }
+      
+      setSelectedFile(null);
+      setIsLoading(false);
+
     } catch (err) {
       console.error("Error uploading to backend:", err);
       alert("Failed to connect to backend. Make sure your app.js is running!");
+      setIsLoading(false);
     }
   };
 
   const onDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
   const onDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
-  const onDrop = async (e) => { e.preventDefault(); setIsDragging(false); await processFile(e.dataTransfer.files[0]); };
-  const onFileSelect = async (e) => { await processFile(e.target.files[0]); e.target.value = null; };
+  const onDrop = (e) => { e.preventDefault(); setIsDragging(false); const file = e.dataTransfer.files[0]; if (file) setSelectedFile(file); };
+  const onFileSelect = (e) => { const file = e.target.files[0]; if (file) setSelectedFile(file); e.target.value = null; };
+
+  const handleAnalyzeClick = async () => {
+    // STRICT GUARD: Force them to enter a balance!
+    if (!startingBalance || startingBalance.trim() === "") {
+      alert("Please enter your exact starting balance first!");
+      return;
+    }
+    
+    if (!selectedFile) return;
+    setIsLoading(true);
+    await processFile(selectedFile);
+  };
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -219,17 +241,52 @@ export default function Dashboard() {
             />
           </div>
           
-          <label 
-            htmlFor="mobile-upload" onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
-            className={`flex-1 min-h-[160px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-6 transition-all cursor-pointer ${
-              isDragging ? 'border-[#3B82F6] bg-[#3B82F6]/10' : 'border-[#1F2937] bg-[#131A28] hover:border-[#3B82F6]/50 hover:bg-[#1C263A]'
-            }`}
-          >
-            <input type="file" id="mobile-upload" className="hidden" accept=".csv,.json" onChange={onFileSelect}/>
-            <div className="text-4xl mb-3">📤</div>
-            <p className="text-sm font-bold text-white mb-1">Upload File</p>
-            <p className="text-xs text-muted text-center">CSV/JSON (Max 2MB)</p>
-          </label>
+          {!selectedFile ? (
+            <label 
+              htmlFor="mobile-upload" onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
+              className={`flex-1 min-h-[160px] rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-6 transition-all cursor-pointer ${
+                isDragging ? 'border-[#3B82F6] bg-[#3B82F6]/10' : 'border-[#1F2937] bg-[#131A28] hover:border-[#3B82F6]/50 hover:bg-[#1C263A]'
+              }`}
+            >
+              <input type="file" id="mobile-upload" className="hidden" accept=".csv,.json" onChange={onFileSelect}/>
+              <div className="text-4xl mb-3">📤</div>
+              <p className="text-sm font-bold text-white mb-1">Upload File</p>
+              <p className="text-xs text-muted text-center">CSV/JSON (Max 2MB)</p>
+            </label>
+          ) : (
+            <div className="flex-1 min-h-[160px] rounded-xl border-2 border-[#10B981] bg-[#10B981]/10 flex flex-col items-center justify-center p-6 transition-all">
+              <div className="text-4xl mb-2">✅</div>
+              <p className="text-sm font-bold text-white mb-1">File Ready!</p>
+              <p className="text-xs text-[#10B981] mb-5 max-w-[200px] truncate">{selectedFile.name}</p>
+              
+              <button 
+                onClick={handleAnalyzeClick} 
+                disabled={isLoading}
+                className="bg-[#3B82F6] hover:bg-[#2563EB] disabled:bg-[#1D4ED8] text-white font-bold py-2.5 px-6 rounded-lg transition-all flex items-center justify-center min-w-[160px] shadow-lg"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  "Analyze Now"
+                )}
+              </button>
+
+              {!isLoading && (
+                <button 
+                  onClick={() => setSelectedFile(null)} 
+                  className="text-[10px] font-bold text-gray-500 hover:text-white mt-4 tracking-wider uppercase transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-2 flex flex-col">

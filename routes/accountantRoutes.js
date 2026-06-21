@@ -40,11 +40,14 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
         return res.status(400).json({ message: "Please upload a file. "});
     }
 
+    // STRICT GUARD: Backend completely rejects the request if no balance is provided!
+    const customStartingBalance = parseFloat(req.body.startingBalance);
+    if (isNaN(customStartingBalance)) {
+        return res.status(400).json({ error: "Starting balance is strictly required." });
+    }
+
     const filePath = req.file.path; 
     const fileType = req.file.mimetype; 
-    
-    // NEW: Capture custom starting balance from Frontend (Defaults to 2000 if empty)
-    const customStartingBalance = parseFloat(req.body.startingBalance) || 2000;
 
     if (fileType === 'application/json') { 
         try { 
@@ -56,7 +59,6 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
             const dangerData = calculateDistanceToDanger(trades);
             const phychologyData = calculatePsychologicalDrawdown(trades);
             
-            // Send custom balance to Forecaster engines
             const runwayData = calculateSurvivalRunway(trades, customStartingBalance);
             const ruinData = calculateRiskOfRuin(trades, customStartingBalance);
 
@@ -68,7 +70,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
                 },
                 trades: trades,
-                startingBalance: customStartingBalance // Send back to frontend so graph knows where to start
+                startingBalance: customStartingBalance
             });
         } catch (err) {
             console.error("MATH ENGINE CRASH:", err);
@@ -90,7 +92,6 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
             const dangerData = calculateDistanceToDanger(results);
             const phychologyData = calculatePsychologicalDrawdown(results);
             
-            // Send custom balance to Forecaster engines
             const runwayData = calculateSurvivalRunway(results, customStartingBalance);
             const ruinData = calculateRiskOfRuin(results, customStartingBalance);
 
@@ -102,7 +103,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
                 },
                 trades: results,
-                startingBalance: customStartingBalance // Send back to frontend so graph knows where to start
+                startingBalance: customStartingBalance
             });
         })
         .on('error', (err) => { 
