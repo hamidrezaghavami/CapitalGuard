@@ -6,7 +6,7 @@ import fs from 'fs';
 import { normalizeTrade } from '../utils/dataNormalizer.js';
 import { calculateFeeDrain } from '../Controllers/accountantController.js';
 import { calculateSurvivalRunway, calculateRiskOfRuin } from '../Controllers/forecasterController.js';
-import { calculateDistanceToDanger, calculatePsychologicalDrawdown} from '../Controllers/riskController.js';
+import { calculateDistanceToDanger, calculatePsychologicalDrawdown, calculatePortfolioVulnerability } from '../Controllers/riskController.js';
 
 const router = express.Router();
 
@@ -55,9 +55,13 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
             const parsedData = JSON.parse(rawData);
             const trades = parsedData.TradeHistory || parsedData;
 
-            const accountantMetrics = calculateFeeDrain(trades);
+            // FIXED: Passing customStartingBalance into calculateFeeDrain so your graph knows where to start
+            const accountantMetrics = calculateFeeDrain(trades, customStartingBalance);
             const dangerData = calculateDistanceToDanger(trades);
             const phychologyData = calculatePsychologicalDrawdown(trades);
+            
+            // NEW: Calling the Portfolio Vulnerability function
+            const vulnerabilityData = calculatePortfolioVulnerability(trades, customStartingBalance);
             
             const runwayData = calculateSurvivalRunway(trades, customStartingBalance);
             const ruinData = calculateRiskOfRuin(trades, customStartingBalance);
@@ -66,7 +70,12 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                 message: "Dashboard data completely analyzed!",
                 analytics: {
                     accountant: accountantMetrics,
-                    riskOfficer: { distanceToDanger: dangerData, phychology: phychologyData },
+                    riskOfficer: { 
+                        distanceToDanger: dangerData, 
+                        phychology: phychologyData,
+                        // NEW: Exporting it precisely where React is expecting to find it
+                        portfolioVulnerability: vulnerabilityData 
+                    },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
                 },
                 trades: trades,
@@ -88,9 +97,13 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
             results.push(cleanTrade);
         })
         .on('end', () => {
-            const accountantMetrics = calculateFeeDrain(results);
+            // FIXED: Passing customStartingBalance into calculateFeeDrain
+            const accountantMetrics = calculateFeeDrain(results, customStartingBalance);
             const dangerData = calculateDistanceToDanger(results);
             const phychologyData = calculatePsychologicalDrawdown(results);
+            
+            // NEW: Calling the Portfolio Vulnerability function
+            const vulnerabilityData = calculatePortfolioVulnerability(results, customStartingBalance);
             
             const runwayData = calculateSurvivalRunway(results, customStartingBalance);
             const ruinData = calculateRiskOfRuin(results, customStartingBalance);
@@ -99,7 +112,12 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                 message: "Dashboard data completely analyzed!",
                 analytics: {
                     accountant: accountantMetrics,
-                    riskOfficer: { distanceToDanger: dangerData, phychology: phychologyData },
+                    riskOfficer: { 
+                        distanceToDanger: dangerData, 
+                        phychology: phychologyData,
+                        // NEW: Exporting to React
+                        portfolioVulnerability: vulnerabilityData 
+                    },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
                 },
                 trades: results,

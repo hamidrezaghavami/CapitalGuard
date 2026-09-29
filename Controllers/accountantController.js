@@ -1,6 +1,5 @@
 // mathematical for Nominal vs. fee Drain Analysis
-// mathematical for Nominal vs. fee Drain Analysis
-export const calculateFeeDrain = (tradesArray) => {
+export const calculateFeeDrain = (tradesArray, initialBalance = 2000) => {
     let totalFees = 0;
     let grossPnL = 0;
     
@@ -9,25 +8,37 @@ export const calculateFeeDrain = (tradesArray) => {
     let grossLossOnly = 0;
     let winningTrades = 0;
     
-    const startingBalance = 0;
+    // 1. Accept starting balance dynamically, fallback to 2000
+    const startingBalance = parseFloat(initialBalance) || 2000;
+    let currentEquity = startingBalance;
+    
+    // 2. Initialize the chart array with the starting balance
+    const equityCurve = [currentEquity];
 
     // loop through the array from router
     const journalHistory = tradesArray.map(trade => {
 
         // FIXED: Added 'ResultUSD' to the OR statement so it catches your AI file!
-        const pnl = parseFloat(trade.profitOrLoss || trade.PnL || trade.ResultUSD || 0 );
-        const fee = parseFloat(trade.fee || trade.commission || 0 );
+        const pnl = parseFloat(trade.profitOrLoss || trade.PnL || trade.ResultUSD || 0);
+        const fee = parseFloat(trade.fee || trade.commission || 0);
+        
+        // 3. Calculate true net per trade to fix the 0 loss / Infinity bug
+        const netTradePnL = pnl - fee;
 
         grossPnL += pnl;
         totalFees += fee;
 
-        // NEW: Calculate wins/losses for advanced metrics
-        if (pnl > 0) {
-            grossProfitOnly += pnl;
+        // 4. Base advanced metrics on the NET trade result
+        if (netTradePnL > 0) {
+            grossProfitOnly += netTradePnL;
             winningTrades++;
-        } else if (pnl < 0) {
-            grossLossOnly += Math.abs(pnl);
+        } else if (netTradePnL < 0) {
+            grossLossOnly += Math.abs(netTradePnL);
         }
+        
+        // 5. Build cumulative equity curve for the graph
+        currentEquity += netTradePnL;
+        equityCurve.push(currentEquity);
 
         // tag is exist or upload file, defualt tag
         const existingTag = trade.psychologyTag || trade.tag || "";
@@ -37,11 +48,11 @@ export const calculateFeeDrain = (tradesArray) => {
             dateTime: trade.dateTime || trade.date || trade.DateTime || new Date().toISOString(),
             assetName: trade.assetName || trade.name || trade.Symbol || "Unknown",
             entryPrice: parseFloat(trade.entryPrice || trade.EntryPrice || 0),
-            exitPrice: parseFloat(trade.exitPrice || trade.ExitPrice || 0 ),
-            stopLoss: parseFloat(trade.stopLoss || trade.SL || trade.StopLoss || 0 ),
-            takingProfit: parseFloat(trade.takingProfit || trade.TP || trade.TargetPoint || 0 ),
-            positionSize: parseFloat(trade.positionSize || trade.size || trade.VolumeLot || 0 ),
-            pnl: pnl - fee,
+            exitPrice: parseFloat(trade.exitPrice || trade.ExitPrice || 0),
+            stopLoss: parseFloat(trade.stopLoss || trade.SL || trade.StopLoss || 0),
+            takingProfit: parseFloat(trade.takingProfit || trade.TP || trade.TargetPoint || 0),
+            positionSize: parseFloat(trade.positionSize || trade.size || trade.VolumeLot || 0),
+            pnl: netTradePnL,
             feePaid: fee,
             psychologyTag: existingTag,
         }
@@ -63,6 +74,8 @@ export const calculateFeeDrain = (tradesArray) => {
         // NEW: Export these EXACT names so React can instantly show them!
         totalProfit: netPnL,
         winRate: winRate,
-        profitFactor: profitFactor
+        profitFactor: profitFactor,
+        equityCurve: equityCurve,          // Export the array for your chart
+        journalHistory: journalHistory     // Export the clean array for the journal table
     };
 };

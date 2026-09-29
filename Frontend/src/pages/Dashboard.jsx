@@ -33,19 +33,33 @@ export default function Dashboard() {
       setChartStartLine(baseBalance);
       setStartingBalance(cachedBalance);
 
-      setMetrics({
-        totalProfit: analytics.accountant?.totalProfit || 0,
-        winRate: analytics.accountant?.winRate || 0,
-        totalTrades: analytics.accountant?.totalTrades || 0,
-        profitFactor: analytics.accountant?.profitFactor || 0,
-        marginCallProb: analytics.forecaster?.riskOfRuin?.riskOfRuinPercent || 0,
-        maxCapitalBleed: 100 - (analytics.riskOfficer?.distanceToDanger?.disciplineScore || 100),
-        portfolioVulnerability: analytics.forecaster?.riskOfRuin?.riskOfRuinPercent || 0,
-        riskStatus: analytics.forecaster?.riskOfRuin?.status || "SAFE",
-        daysUntilLiquidation: analytics.forecaster?.runway?.survivalRunway || 0,
-        burnRate: analytics.forecaster?.runway?.averageLoss || 0,
-        longevityStatus: analytics.forecaster?.runway?.status || "Active"
-      });
+      // 1. Correctly map the specific UI elements to the right backend controllers
+    setMetrics({
+      totalProfit: analytics.accountant?.totalProfit || 0,
+      winRate: analytics.accountant?.winRate || 0,
+      totalTrades: analytics.accountant?.totalTrades || 0,
+      profitFactor: analytics.accountant?.profitFactor || 0,
+      
+      // FIXED: Pointing to the new Portfolio Vulnerability controller
+      marginCallProb: analytics.riskOfficer?.portfolioVulnerability?.marginCallProbability || 0,
+      maxCapitalBleed: analytics.riskOfficer?.portfolioVulnerability?.maximumCapitalBleed || 0,
+      portfolioVulnerability: analytics.riskOfficer?.portfolioVulnerability?.portfolioVulnerability || 0,
+      riskStatus: analytics.riskOfficer?.portfolioVulnerability?.status || "SAFE",
+      
+      // Forecaster mappings
+      daysUntilLiquidation: analytics.forecaster?.runway?.survivalRunway || 0,
+      burnRate: analytics.forecaster?.runway?.monthlyBurnRate || 0,
+      longevityStatus: analytics.forecaster?.runway?.status || "Active"
+    });
+    
+    // 2. Delete your forEach loop and use the backend's perfect equity curve!
+    if (analytics.accountant?.equityCurve) {
+      const curveData = analytics.accountant.equityCurve.map((balance, index) => ({
+        tradeNumber: index,
+        equity: parseFloat(balance.toFixed(2))
+      }));
+      setChartData(curveData);
+    }
 
       if (trades && trades.length > 0) {
         let runningBalance = baseBalance;
