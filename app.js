@@ -12,6 +12,7 @@ import rateLimit from 'express-rate-limit';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.set('trust proxy', 1);
 
 // secure HTTP headers sent from your server to the browser
 app.use(cors({
