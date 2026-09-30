@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import csvParser from 'csv-parser';
-import fs from 'fs';
+import { Readable } from 'stream';
 import { normalizeTrade } from '../utils/dataNormalizer.js';
 import { calculateFeeDrain } from '../Controllers/accountantController.js';
 import { calculateSurvivalRunway, calculateRiskOfRuin } from '../Controllers/forecasterController.js';
@@ -10,23 +10,13 @@ import { calculateDistanceToDanger, calculatePsychologicalDrawdown, calculatePor
 
 const router = express.Router();
 
-if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads');
-}
+// 1. Set multer to hold the file in RAM
+const storage = multer.memoryStorage();
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => { 
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => { 
-        cb(null, `${Date.now()}-${file.originalname}`);
-    }
-});
-
-const fileFilter = (req, file, cb ) => { 
+const fileFilter = (req, file, cb) => { 
     const allowedType = ['.csv', '.json'];
     const ext = path.extname(file.originalname).toLowerCase();
-    if ( allowedType.includes(ext)) { 
+    if (allowedType.includes(ext)) { 
         cb(null, true);
     } else { 
         cb(new Error('Invalid file type. Only CSV and JSON are allowed.'), false);
@@ -37,32 +27,29 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 router.post('/upload', upload.single('tradingLog'), (req, res) => {
     if (!req.file) { 
-        return res.status(400).json({ message: "Please upload a file. "});
+        return res.status(400).json({ message: "Please upload a file." });
     }
 
-    // STRICT GUARD: Backend completely rejects the request if no balance is provided!
     const customStartingBalance = parseFloat(req.body.startingBalance);
     if (isNaN(customStartingBalance)) {
         return res.status(400).json({ error: "Starting balance is strictly required." });
     }
 
-    const filePath = req.file.path; 
+    // 2. Read the file type and the buffer from RAM instead of disk paths
     const fileType = req.file.mimetype; 
+    const fileBuffer = req.file.buffer;
 
     if (fileType === 'application/json') { 
         try { 
-            const rawData = fs.readFileSync(filePath, 'utf-8');
+            // 3. Convert the buffer directly to a string and parse it
+            const rawData = fileBuffer.toString('utf-8');
             const parsedData = JSON.parse(rawData);
             const trades = parsedData.TradeHistory || parsedData;
 
-            // FIXED: Passing customStartingBalance into calculateFeeDrain so your graph knows where to start
             const accountantMetrics = calculateFeeDrain(trades, customStartingBalance);
             const dangerData = calculateDistanceToDanger(trades);
             const phychologyData = calculatePsychologicalDrawdown(trades);
-            
-            // NEW: Calling the Portfolio Vulnerability function
             const vulnerabilityData = calculatePortfolioVulnerability(trades, customStartingBalance);
-            
             const runwayData = calculateSurvivalRunway(trades, customStartingBalance);
             const ruinData = calculateRiskOfRuin(trades, customStartingBalance);
 
@@ -73,7 +60,6 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     riskOfficer: { 
                         distanceToDanger: dangerData, 
                         phychology: phychologyData,
-                        // NEW: Exporting it precisely where React is expecting to find it
                         portfolioVulnerability: vulnerabilityData 
                     },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
@@ -90,21 +76,18 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
     if (fileType === 'text/csv') { 
         const results = [];
 
-        fs.createReadStream(filePath)
+        // 4. Stream the buffer into the CSV parser
+        Readable.from(fileBuffer.toString('utf-8'))
         .pipe(csvParser()) 
         .on('data', (data) => { 
             const cleanTrade = normalizeTrade(data);
             results.push(cleanTrade);
         })
         .on('end', () => {
-            // FIXED: Passing customStartingBalance into calculateFeeDrain
             const accountantMetrics = calculateFeeDrain(results, customStartingBalance);
             const dangerData = calculateDistanceToDanger(results);
             const phychologyData = calculatePsychologicalDrawdown(results);
-            
-            // NEW: Calling the Portfolio Vulnerability function
             const vulnerabilityData = calculatePortfolioVulnerability(results, customStartingBalance);
-            
             const runwayData = calculateSurvivalRunway(results, customStartingBalance);
             const ruinData = calculateRiskOfRuin(results, customStartingBalance);
 
@@ -115,7 +98,6 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     riskOfficer: { 
                         distanceToDanger: dangerData, 
                         phychology: phychologyData,
-                        // NEW: Exporting to React
                         portfolioVulnerability: vulnerabilityData 
                     },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
