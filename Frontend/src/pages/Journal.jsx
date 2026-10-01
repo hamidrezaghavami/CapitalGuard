@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-
+import { useState, useEffect } from 'react';
 export default function Journal() {
   const [trades, setTrades] = useState([]);
   const [openDropdownIndex, setOpenDropdownIndex] = useState(null);
@@ -123,8 +122,8 @@ export default function Journal() {
       <div className="flex flex-col gap-3">
         {trades.length > 0 ? (
           trades.map((trade, index) => {
-            const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
-            const fee = parseFloat(trade.fee || trade.Fee || trade.commission || 0);
+            const pnl = parseFloat(trade.pnl ?? trade.ResultUSD ?? trade.profitOrLoss ?? 0);
+            const fee = parseFloat(trade.feePaid ?? trade.fee ?? trade.commission ?? 0);
             const asset = trade.symbol || trade.Asset || trade.Symbol || "BTC/USDT";
             const type = trade.side || trade.type || trade.Direction || "BUY";
             

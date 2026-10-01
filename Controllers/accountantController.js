@@ -18,8 +18,8 @@ export const calculateFeeDrain = (tradesArray, initialBalance = 2000) => {
     // loop through the array from router
     const journalHistory = tradesArray.map(trade => {
 
-        // FIXED: Added 'ResultUSD' to the OR statement so it catches your AI file!
-        const pnl = parseFloat(trade.profitOrLoss || trade.PnL || trade.ResultUSD || 0);
+        // FIXED: Added lowercase 'trade.pnl'
+        const pnl = parseFloat(trade.pnl || trade.profitOrLoss || trade.PnL || trade.ResultUSD || 0);
         const fee = parseFloat(trade.fee || trade.commission || 0);
         
         // 3. Calculate true net per trade to fix the 0 loss / Infinity bug
@@ -43,15 +43,15 @@ export const calculateFeeDrain = (tradesArray, initialBalance = 2000) => {
         // tag is exist or upload file, defualt tag
         const existingTag = trade.psychologyTag || trade.tag || "";
 
-        // return clean mapped Obj for Automatic Trading Journal
+        // FIXED: Added mapping for the JSON file's exact keys (entry_price, entry_date, volume, sl, tp)
         return { 
-            dateTime: trade.dateTime || trade.date || trade.DateTime || new Date().toISOString(),
-            assetName: trade.assetName || trade.name || trade.Symbol || "Unknown",
-            entryPrice: parseFloat(trade.entryPrice || trade.EntryPrice || 0),
-            exitPrice: parseFloat(trade.exitPrice || trade.ExitPrice || 0),
-            stopLoss: parseFloat(trade.stopLoss || trade.SL || trade.StopLoss || 0),
-            takingProfit: parseFloat(trade.takingProfit || trade.TP || trade.TargetPoint || 0),
-            positionSize: parseFloat(trade.positionSize || trade.size || trade.VolumeLot || 0),
+            dateTime: trade.entry_date || trade.dateTime || trade.date || trade.DateTime || new Date().toISOString(),
+            assetName: trade.symbol || trade.assetName || trade.name || trade.Symbol || "Unknown",
+            entryPrice: parseFloat(trade.entry_price || trade.entryPrice || trade.EntryPrice || 0),
+            exitPrice: parseFloat(trade.exit_price || trade.exitPrice || trade.ExitPrice || 0),
+            stopLoss: parseFloat(trade.sl || trade.stopLoss || trade.SL || trade.StopLoss || 0),
+            takingProfit: parseFloat(trade.tp || trade.takingProfit || trade.TP || trade.TargetPoint || 0),
+            positionSize: parseFloat(trade.volume || trade.positionSize || trade.size || trade.VolumeLot || 0),
             pnl: netTradePnL,
             feePaid: fee,
             psychologyTag: existingTag,
@@ -62,8 +62,7 @@ export const calculateFeeDrain = (tradesArray, initialBalance = 2000) => {
     const endingBalance = startingBalance + netPnL;
     
     // NEW: Calculate the final ratios
-    const winRate = tradesArray.length > 0 ? ((winningTrades / tradesArray.length) * 100).toFixed(1) : 0;
-    const profitFactor = grossLossOnly > 0 ? (grossProfitOnly / grossLossOnly).toFixed(2) : "∞";
+    const winRate = tradesArray.length > 0 ? parseFloat(((winningTrades / tradesArray.length) * 100).toFixed(1)) : 0;
 
     return { 
         startingBalance,

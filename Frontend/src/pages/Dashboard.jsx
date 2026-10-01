@@ -1,43 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-
-// Frontend calculation engine to guarantee accurate Accountant metrics
-const calculateAccountantMetrics = (trades) => {
-  if (!trades || trades.length === 0) {
-    return { totalProfit: 0, winRate: 0, totalTrades: 0, profitFactor: 0 };
-  }
-
-  let grossProfit = 0;
-  let grossLoss = 0;
-  let totalPnl = 0;
-  let winningTrades = 0;
-
-  trades.forEach((trade) => {
-    const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
-    const fee = parseFloat(trade.feePaid || trade.fee || trade.commission || 0);
-    const netPnl = pnl - fee;
-
-    totalPnl += netPnl;
-
-    if (netPnl > 0) {
-      grossProfit += netPnl;
-      winningTrades += 1;
-    } else if (netPnl < 0) {
-      grossLoss += Math.abs(netPnl);
-    }
-  });
-
-  const winRate = ((winningTrades / trades.length) * 100).toFixed(1);
-  const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? 99.99 : 0) : (grossProfit / grossLoss).toFixed(2);
-
-  return {
-    totalProfit: totalPnl,
-    winRate: parseFloat(winRate),
-    totalTrades: trades.length,
-    profitFactor: parseFloat(profitFactor)
-  };
-};
 
 export default function Dashboard() {
   const [isDragging, setIsDragging] = useState(false);
@@ -70,34 +33,33 @@ export default function Dashboard() {
       setChartStartLine(baseBalance);
       setStartingBalance(cachedBalance);
 
-      // 1. Calculate the core metrics directly from the trades array
-      const computedMetrics = calculateAccountantMetrics(trades);
-
       setMetrics({
-        totalProfit: computedMetrics.totalProfit,
-        winRate: computedMetrics.winRate,
-        totalTrades: computedMetrics.totalTrades,
-        profitFactor: computedMetrics.profitFactor,
+        totalProfit: analytics.accountant?.totalProfit || 0,
+        winRate: analytics.accountant?.winRate || 0,
+        totalTrades: analytics.accountant?.totalTrades || 0,
+        profitFactor: analytics.accountant?.profitFactor || 0,
         
-        // Risk Officer & Forecaster mappings
+        // Risk Officer mappings (Unified)
         marginCallProb: analytics.riskOfficer?.portfolioVulnerability?.marginCallProbability || 0,
         maxCapitalBleed: analytics.riskOfficer?.portfolioVulnerability?.maximumCapitalBleed || 0,
         portfolioVulnerability: analytics.riskOfficer?.portfolioVulnerability?.portfolioVulnerability || 0,
         riskStatus: analytics.riskOfficer?.portfolioVulnerability?.status || "SAFE",
+        
+        // Forecaster mappings
         daysUntilLiquidation: analytics.forecaster?.runway?.survivalRunway || 0,
         burnRate: analytics.forecaster?.runway?.monthlyBurnRate || 0,
         longevityStatus: analytics.forecaster?.runway?.status || "Active"
       });
     
-      // 2. Generate the equity curve directly from the trades array
       if (trades && trades.length > 0) {
         let runningBalance = baseBalance;
         const curveData = [];
         curveData.push({ tradeNumber: 0, equity: baseBalance });
 
         trades.forEach((trade, index) => {
-          const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
-          const fee = parseFloat(trade.feePaid || trade.fee || trade.commission || 0);
+          // FIXED: Using ?? to prevent actual 0 values from failing over
+          const pnl = parseFloat(trade.pnl ?? trade.ResultUSD ?? trade.profitOrLoss ?? 0);
+          const fee = parseFloat(trade.feePaid ?? trade.fee ?? trade.commission ?? 0);
           runningBalance += (pnl - fee);
           curveData.push({ tradeNumber: index + 1, equity: parseFloat(runningBalance.toFixed(2)) });
         });
@@ -136,20 +98,21 @@ export default function Dashboard() {
 
       setChartStartLine(baseBalance);
 
-      // Force calculations on the frontend for immediate accuracy
-      const computedMetrics = calculateAccountantMetrics(trades);
-
       setMetrics({
-        totalProfit: computedMetrics.totalProfit,
-        winRate: computedMetrics.winRate,
-        totalTrades: computedMetrics.totalTrades,
-        profitFactor: computedMetrics.profitFactor,
-        marginCallProb: analytics.forecaster?.riskOfRuin?.riskOfRuinPercent || 0,
-        maxCapitalBleed: 100 - (analytics.riskOfficer?.distanceToDanger?.disciplineScore || 100),
-        portfolioVulnerability: analytics.forecaster?.riskOfRuin?.riskOfRuinPercent || 0,
-        riskStatus: analytics.forecaster?.riskOfRuin?.status || "SAFE",
+        totalProfit: analytics.accountant?.totalProfit || 0,
+        winRate: analytics.accountant?.winRate || 0,
+        totalTrades: analytics.accountant?.totalTrades || 0,
+        profitFactor: analytics.accountant?.profitFactor || 0,
+        
+        // Risk Officer mappings (Unified)
+        marginCallProb: analytics.riskOfficer?.portfolioVulnerability?.marginCallProbability || 0,
+        maxCapitalBleed: analytics.riskOfficer?.portfolioVulnerability?.maximumCapitalBleed || 0,
+        portfolioVulnerability: analytics.riskOfficer?.portfolioVulnerability?.portfolioVulnerability || 0,
+        riskStatus: analytics.riskOfficer?.portfolioVulnerability?.status || "SAFE",
+        
+        // Forecaster mappings
         daysUntilLiquidation: analytics.forecaster?.runway?.survivalRunway || 0,
-        burnRate: analytics.forecaster?.runway?.averageLoss || 0,
+        burnRate: analytics.forecaster?.runway?.monthlyBurnRate || 0,
         longevityStatus: analytics.forecaster?.runway?.status || "Active"
       });
 
@@ -159,8 +122,9 @@ export default function Dashboard() {
 
       if (trades && trades.length > 0) {
         trades.forEach((trade, index) => {
-          const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
-          const fee = parseFloat(trade.feePaid || trade.fee || trade.commission || 0);
+          // FIXED: Using ?? to prevent actual 0 values from failing over
+          const pnl = parseFloat(trade.pnl ?? trade.ResultUSD ?? trade.profitOrLoss ?? 0);
+          const fee = parseFloat(trade.feePaid ?? trade.fee ?? trade.commission ?? 0);
           runningBalance += (pnl - fee);
           curveData.push({ tradeNumber: index + 1, equity: parseFloat(runningBalance.toFixed(2)) });
         });
@@ -187,7 +151,6 @@ export default function Dashboard() {
   const onFileSelect = (e) => { const file = e.target.files[0]; if (file) setSelectedFile(file); e.target.value = null; };
 
   const handleAnalyzeClick = async () => {
-    // STRICT GUARD: Force them to enter a balance!
     if (!startingBalance || startingBalance.trim() === "") {
       alert("Please enter your exact starting balance first!");
       return;

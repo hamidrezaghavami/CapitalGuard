@@ -59,7 +59,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
                     accountant: accountantMetrics,
                     riskOfficer: { 
                         distanceToDanger: dangerData, 
-                        phychology: phychologyData,
+                        psychology: psychologyData,
                         portfolioVulnerability: vulnerabilityData 
                     },
                     forecaster: { runway: runwayData, riskOfRuin: ruinData }
