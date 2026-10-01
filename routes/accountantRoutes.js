@@ -48,7 +48,7 @@ router.post('/upload', upload.single('tradingLog'), (req, res) => {
 
             const accountantMetrics = calculateFeeDrain(trades, customStartingBalance);
             const dangerData = calculateDistanceToDanger(trades);
-            const phychologyData = calculatePsychologicalDrawdown(trades);
+            const psychologyData = calculatePsychologicalDrawdown(trades);
             const vulnerabilityData = calculatePortfolioVulnerability(trades, customStartingBalance);
             const runwayData = calculateSurvivalRunway(trades, customStartingBalance);
             const ruinData = calculateRiskOfRuin(trades, customStartingBalance);

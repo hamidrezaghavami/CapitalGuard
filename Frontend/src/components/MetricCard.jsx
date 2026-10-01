@@ -1,7 +1,5 @@
 /*A reusable visual box to cleanly display "The Accountant,"
 "The Risk Officer," and "The Forecaster" data without cluttering your main dashboard file.*/
-import React from 'react'
-
 export default function MetricCard({ title, subtitle, value, trend, color = 'blue', children }) {
   // Map color names to design system token classes
   const colorMap = {

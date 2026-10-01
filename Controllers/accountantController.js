@@ -2,33 +2,23 @@
 export const calculateFeeDrain = (tradesArray, initialBalance = 2000) => {
     let totalFees = 0;
     let grossPnL = 0;
-    
-    // Tracking variables for Win Rate and Profit Factor
     let grossProfitOnly = 0;
     let grossLossOnly = 0;
     let winningTrades = 0;
     
-    // 1. Accept starting balance dynamically, fallback to 2000
     const startingBalance = parseFloat(initialBalance) || 2000;
     let currentEquity = startingBalance;
-    
-    // 2. Initialize the chart array with the starting balance
     const equityCurve = [currentEquity];
 
-    // loop through the array from router
     const journalHistory = tradesArray.map(trade => {
-
-        // FIXED: Added lowercase 'trade.pnl'
-        const pnl = parseFloat(trade.pnl || trade.profitOrLoss || trade.PnL || trade.ResultUSD || 0);
-        const fee = parseFloat(trade.fee || trade.commission || 0);
+        // Use ?? to safely handle exact $0.00 trades
+        const pnl = parseFloat(trade.pnl ?? trade.profitOrLoss ?? trade.PnL ?? trade.ResultUSD ?? 0);
+        const fee = parseFloat(trade.fee ?? trade.commission ?? trade.feePaid ?? 0);
         
-        // 3. Calculate true net per trade to fix the 0 loss / Infinity bug
         const netTradePnL = pnl - fee;
-
         grossPnL += pnl;
         totalFees += fee;
 
-        // 4. Base advanced metrics on the NET trade result
         if (netTradePnL > 0) {
             grossProfitOnly += netTradePnL;
             winningTrades++;
@@ -36,45 +26,39 @@ export const calculateFeeDrain = (tradesArray, initialBalance = 2000) => {
             grossLossOnly += Math.abs(netTradePnL);
         }
         
-        // 5. Build cumulative equity curve for the graph
         currentEquity += netTradePnL;
         equityCurve.push(currentEquity);
 
-        // tag is exist or upload file, defualt tag
-        const existingTag = trade.psychologyTag || trade.tag || "";
-
-        // FIXED: Added mapping for the JSON file's exact keys (entry_price, entry_date, volume, sl, tp)
         return { 
             dateTime: trade.entry_date || trade.dateTime || trade.date || trade.DateTime || new Date().toISOString(),
-            assetName: trade.symbol || trade.assetName || trade.name || trade.Symbol || "Unknown",
-            entryPrice: parseFloat(trade.entry_price || trade.entryPrice || trade.EntryPrice || 0),
-            exitPrice: parseFloat(trade.exit_price || trade.exitPrice || trade.ExitPrice || 0),
-            stopLoss: parseFloat(trade.sl || trade.stopLoss || trade.SL || trade.StopLoss || 0),
-            takingProfit: parseFloat(trade.tp || trade.takingProfit || trade.TP || trade.TargetPoint || 0),
-            positionSize: parseFloat(trade.volume || trade.positionSize || trade.size || trade.VolumeLot || 0),
+            assetName: trade.symbol || trade.assetName || trade.name || "Unknown",
+            entryPrice: parseFloat(trade.entry_price || trade.entryPrice || 0),
+            exitPrice: parseFloat(trade.exit_price || trade.exitPrice || 0),
+            stopLoss: parseFloat(trade.sl || trade.stopLoss || trade.SL || 0),
+            takingProfit: parseFloat(trade.tp || trade.takingProfit || trade.TP || 0),
+            positionSize: parseFloat(trade.volume || trade.positionSize || trade.size || 0),
             pnl: netTradePnL,
             feePaid: fee,
-            psychologyTag: existingTag,
+            psychologyTag: trade.psychologyTag || trade.tag || "",
         }
     });
 
     const netPnL = grossPnL - totalFees;
-    const endingBalance = startingBalance + netPnL;
     
-    // NEW: Calculate the final ratios
     const winRate = tradesArray.length > 0 ? parseFloat(((winningTrades / tradesArray.length) * 100).toFixed(1)) : 0;
+    // RESTORED: Profit Factor calculation
+    const profitFactor = grossLossOnly > 0 ? parseFloat((grossProfitOnly / grossLossOnly).toFixed(2)) : (grossProfitOnly > 0 ? 99.99 : 0);
 
     return { 
         startingBalance,
-        endingBalance,
+        endingBalance: startingBalance + netPnL,
         grossEarnings: startingBalance + grossPnL,
         totalFeesDeducted: totalFees,
         totalTrades: tradesArray.length,
-        // NEW: Export these EXACT names so React can instantly show them!
         totalProfit: netPnL,
         winRate: winRate,
         profitFactor: profitFactor,
-        equityCurve: equityCurve,          // Export the array for your chart
-        journalHistory: journalHistory     // Export the clean array for the journal table
+        equityCurve: equityCurve,          
+        journalHistory: journalHistory     
     };
 };

@@ -1,6 +1,6 @@
 // Your main layout and router. It checks the user's secure token 
 // and decides whether to show the Landing screen or the main Dashboard.
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
