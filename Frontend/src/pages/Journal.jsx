@@ -126,19 +126,17 @@ export default function Journal() {
             const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
             const fee = parseFloat(trade.fee || trade.Fee || trade.commission || 0);
             const asset = trade.symbol || trade.Asset || trade.Symbol || "BTC/USDT";
-            const type = trade.type || trade.Direction || "BUY";
+            const type = trade.side || trade.type || trade.Direction || "BUY";
             
-            const entryPrice = trade.entry || trade.EntryPrice || trade.Entry || 0;
-            const exitPrice = trade.exit || trade.ExitPrice || trade.Exit || 0;
+            // UPDATED: Added entry_price and exit_price to match your JSON data
+            const entryPrice = trade.entry_price || trade.entry || trade.EntryPrice || trade.Entry || 0;
+            const exitPrice = trade.exit_price || trade.exit || trade.ExitPrice || trade.Exit || 0;
             
-            // Fixed: Now reads "TargetPoint" from your data
-            const tp = trade.tp || trade.TakeProfit || trade.TP || trade.TargetPoint || 0;
-            const sl = trade.sl || trade.StopLoss || trade.SL || 0;
+            const tp = trade.tp || trade.TakeProfit || trade.TP || trade.TargetPoint || null;
+            const sl = trade.sl || trade.StopLoss || trade.SL || null;
             
-            // Fixed: Now reads "VolumeLot" from your data
             const volume = trade.volume || trade.Volume || trade.Size || trade.VolumeLot || 0;
-            
-            const dateTime = trade.date || trade.DateTime || trade.Date || "N/A";
+            const dateTime = trade.entry_date || trade.date || trade.DateTime || trade.Date || "N/A";
             
             const activeTag = trade.tag || null;
 
@@ -167,7 +165,10 @@ export default function Journal() {
                         {type}
                       </span>
                     </div>
-                    <span className="text-[10px] text-gray-500 font-mono block mt-0.5">{dateTime}</span>
+                    {/* OPTIONAL: Formatting the ISO date string if you want it cleaner */}
+                    <span className="text-[10px] text-gray-500 font-mono block mt-0.5">
+                      {dateTime !== "N/A" ? new Date(dateTime).toLocaleString() : dateTime}
+                    </span>
                   </div>
                 </div>
 
