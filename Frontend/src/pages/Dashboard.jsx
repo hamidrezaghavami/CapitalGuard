@@ -2,6 +2,43 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
+// Frontend calculation engine to guarantee accurate Accountant metrics
+const calculateAccountantMetrics = (trades) => {
+  if (!trades || trades.length === 0) {
+    return { totalProfit: 0, winRate: 0, totalTrades: 0, profitFactor: 0 };
+  }
+
+  let grossProfit = 0;
+  let grossLoss = 0;
+  let totalPnl = 0;
+  let winningTrades = 0;
+
+  trades.forEach((trade) => {
+    const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
+    const fee = parseFloat(trade.feePaid || trade.fee || trade.commission || 0);
+    const netPnl = pnl - fee;
+
+    totalPnl += netPnl;
+
+    if (netPnl > 0) {
+      grossProfit += netPnl;
+      winningTrades += 1;
+    } else if (netPnl < 0) {
+      grossLoss += Math.abs(netPnl);
+    }
+  });
+
+  const winRate = ((winningTrades / trades.length) * 100).toFixed(1);
+  const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? 99.99 : 0) : (grossProfit / grossLoss).toFixed(2);
+
+  return {
+    totalProfit: totalPnl,
+    winRate: parseFloat(winRate),
+    totalTrades: trades.length,
+    profitFactor: parseFloat(profitFactor)
+  };
+};
+
 export default function Dashboard() {
   const [isDragging, setIsDragging] = useState(false);
   const [startingBalance, setStartingBalance] = useState(""); 
@@ -33,34 +70,26 @@ export default function Dashboard() {
       setChartStartLine(baseBalance);
       setStartingBalance(cachedBalance);
 
-      // 1. Correctly map the specific UI elements to the right backend controllers
-    setMetrics({
-      totalProfit: analytics.accountant?.totalProfit || 0,
-      winRate: analytics.accountant?.winRate || 0,
-      totalTrades: analytics.accountant?.totalTrades || 0,
-      profitFactor: analytics.accountant?.profitFactor || 0,
-      
-      // FIXED: Pointing to the new Portfolio Vulnerability controller
-      marginCallProb: analytics.riskOfficer?.portfolioVulnerability?.marginCallProbability || 0,
-      maxCapitalBleed: analytics.riskOfficer?.portfolioVulnerability?.maximumCapitalBleed || 0,
-      portfolioVulnerability: analytics.riskOfficer?.portfolioVulnerability?.portfolioVulnerability || 0,
-      riskStatus: analytics.riskOfficer?.portfolioVulnerability?.status || "SAFE",
-      
-      // Forecaster mappings
-      daysUntilLiquidation: analytics.forecaster?.runway?.survivalRunway || 0,
-      burnRate: analytics.forecaster?.runway?.monthlyBurnRate || 0,
-      longevityStatus: analytics.forecaster?.runway?.status || "Active"
-    });
-    
-    // 2. Delete your forEach loop and use the backend's perfect equity curve!
-    if (analytics.accountant?.equityCurve) {
-      const curveData = analytics.accountant.equityCurve.map((balance, index) => ({
-        tradeNumber: index,
-        equity: parseFloat(balance.toFixed(2))
-      }));
-      setChartData(curveData);
-    }
+      // 1. Calculate the core metrics directly from the trades array
+      const computedMetrics = calculateAccountantMetrics(trades);
 
+      setMetrics({
+        totalProfit: computedMetrics.totalProfit,
+        winRate: computedMetrics.winRate,
+        totalTrades: computedMetrics.totalTrades,
+        profitFactor: computedMetrics.profitFactor,
+        
+        // Risk Officer & Forecaster mappings
+        marginCallProb: analytics.riskOfficer?.portfolioVulnerability?.marginCallProbability || 0,
+        maxCapitalBleed: analytics.riskOfficer?.portfolioVulnerability?.maximumCapitalBleed || 0,
+        portfolioVulnerability: analytics.riskOfficer?.portfolioVulnerability?.portfolioVulnerability || 0,
+        riskStatus: analytics.riskOfficer?.portfolioVulnerability?.status || "SAFE",
+        daysUntilLiquidation: analytics.forecaster?.runway?.survivalRunway || 0,
+        burnRate: analytics.forecaster?.runway?.monthlyBurnRate || 0,
+        longevityStatus: analytics.forecaster?.runway?.status || "Active"
+      });
+    
+      // 2. Generate the equity curve directly from the trades array
       if (trades && trades.length > 0) {
         let runningBalance = baseBalance;
         const curveData = [];
@@ -101,16 +130,20 @@ export default function Dashboard() {
       if (!response.ok) throw new Error("Backend rejected the file!");
 
       const backendData = await response.json();
-      const analytics = backendData.analytics;
+      const analytics = backendData.analytics || {};
+      const trades = backendData.trades || [];
       const baseBalance = parseFloat(backendData.startingBalance || startingBalance);
 
       setChartStartLine(baseBalance);
 
+      // Force calculations on the frontend for immediate accuracy
+      const computedMetrics = calculateAccountantMetrics(trades);
+
       setMetrics({
-        totalProfit: analytics.accountant?.totalProfit || 0,
-        winRate: analytics.accountant?.winRate || 0,
-        totalTrades: analytics.accountant?.totalTrades || 0,
-        profitFactor: analytics.accountant?.profitFactor || 0,
+        totalProfit: computedMetrics.totalProfit,
+        winRate: computedMetrics.winRate,
+        totalTrades: computedMetrics.totalTrades,
+        profitFactor: computedMetrics.profitFactor,
         marginCallProb: analytics.forecaster?.riskOfRuin?.riskOfRuinPercent || 0,
         maxCapitalBleed: 100 - (analytics.riskOfficer?.distanceToDanger?.disciplineScore || 100),
         portfolioVulnerability: analytics.forecaster?.riskOfRuin?.riskOfRuinPercent || 0,
@@ -124,8 +157,8 @@ export default function Dashboard() {
       const curveData = [];
       curveData.push({ tradeNumber: 0, equity: baseBalance });
 
-      if (backendData.trades && backendData.trades.length > 0) {
-        backendData.trades.forEach((trade, index) => {
+      if (trades && trades.length > 0) {
+        trades.forEach((trade, index) => {
           const pnl = parseFloat(trade.pnl || trade.ResultUSD || trade.profitOrLoss || 0);
           const fee = parseFloat(trade.feePaid || trade.fee || trade.commission || 0);
           runningBalance += (pnl - fee);
@@ -133,7 +166,7 @@ export default function Dashboard() {
         });
 
         setChartData(curveData);
-        localStorage.setItem("capitalGuard_trades", JSON.stringify(backendData.trades));
+        localStorage.setItem("capitalGuard_trades", JSON.stringify(trades));
         localStorage.setItem("capitalGuard_analytics", JSON.stringify(analytics));
         localStorage.setItem("capitalGuard_balance", baseBalance.toString());
       }
