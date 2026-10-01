@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React,{ useState } from 'react';
 import { SignInButton } from '@clerk/clerk-react';
 
 const Landing = () => {
